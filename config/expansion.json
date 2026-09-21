@@ -4,12 +4,16 @@
   "target": {
     "engine_family": "generation-iii",
     "runtime_base": "pokeemerald-expansion",
-    "remake_origin": "Pocket Monsters Pikachu / Pokemon Yellow"
+    "remake_origin": "Pocket Monsters Pikachu / Pokemon Yellow",
+    "native_rom_max_mib": 32,
+    "native_rom_max_bytes": 33554432,
+    "custom_mapper_over_32_mib": false
   },
   "language_priority": ["ja", "ko", "en"],
   "source_evidence": {
     "rom_manifest": "manifests/rom-baselines.csv",
     "legacy_save_profiles": "manifests/legacy-save-profiles.json",
+    "hardware_capacity": "manifests/hardware-capacity.yml",
     "require_hash_bound_rom_identity": true,
     "require_real_save_validation_before_freezing_migration": true,
     "do_not_conflate_rom_and_save_identity": true
@@ -33,6 +37,14 @@
     "invalid": 65535,
     "max_valid": 65534,
     "table_counts_are_data_driven": true
+  },
+  "rom_budget_policy": {
+    "hard_limit_bytes": 33554432,
+    "warn_percent": 90,
+    "reserve_tail_bytes": 262144,
+    "preferred_max_before_reserve_bytes": 33292288,
+    "pad_release_to_full_32_mib": false,
+    "measure_actual_linked_image": true
   },
   "save_policy": {
     "legacy_profiles": ["yellow-jp-legacy", "yellow-intl-legacy"],
