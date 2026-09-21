@@ -1,0 +1,29 @@
+name: Expansion contract
+
+on:
+  push:
+    paths:
+      - "include/yellow/**"
+      - "config/expansion.json"
+      - "manifests/generation-capacity.csv"
+      - "docs/EXPANSION_ARCHITECTURE.md"
+      - "tests/test_expansion_contract.py"
+      - ".github/workflows/expansion-contract.yml"
+  pull_request:
+    paths:
+      - "include/yellow/**"
+      - "config/expansion.json"
+      - "manifests/generation-capacity.csv"
+      - "docs/EXPANSION_ARCHITECTURE.md"
+      - "tests/test_expansion_contract.py"
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate future-ready expansion contract
+        run: python -m unittest tests.test_expansion_contract -v
