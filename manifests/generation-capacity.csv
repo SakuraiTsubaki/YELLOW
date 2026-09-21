@@ -1,0 +1,12 @@
+generation,status,species_ceiling,move_ceiling,item_ceiling,engine_policy,notes
+1,known,151,165,255,importable,Original RB/Y reference ceiling
+2,known,251,251,255,importable,GS/C reference ceiling
+3,known,386,354,,engine_base,Per-title item ceilings differ
+4,known,493,467,,importable,Per-title item ceilings differ
+5,known,649,559,,importable,Per-title item ceilings differ
+6,known,721,621,,importable,ORAS move ceiling shown
+7,known,809,742,,importable,LGPE species/move ceiling shown
+8,known,905,850,,importable,PLA species/move ceiling shown
+9,known,1025,920,,importable,Highest verified cross-project ceiling currently recorded; game-family tables differ
+10,reserved,,,,future_ready,Do not guess counts; 16-bit IDs and data-driven tables accept verified data later
+11+,reserved,,,,future_ready,No generation-specific engine redesign required by the ID contract
