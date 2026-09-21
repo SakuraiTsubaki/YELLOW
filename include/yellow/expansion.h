@@ -6,9 +6,9 @@
 /*
  * YELLOW expansion contract
  *
- * IDs are intentionally wider than the original Gen III storage assumptions.
- * Actual table sizes remain build-time/data-driven; these are representation
- * limits, not requests to allocate arrays of 65,535 entries.
+ * The modern engine representation is separate from the original Yellow SRAM
+ * layouts. Legacy JP and international saves are import formats; they are not
+ * widened in place.
  */
 
 typedef uint16_t YellowSpeciesId;
@@ -41,25 +41,24 @@ enum YellowGeneration
     YELLOW_GEN_VII = 7,
     YELLOW_GEN_VIII = 8,
     YELLOW_GEN_IX = 9,
-
-    /*
-     * Reserved boundary for future content. Do not assign species/move/item
-     * counts here until they are independently verified.
-     */
     YELLOW_GEN_X = 10,
 };
 
 #define YELLOW_GENERATION_STORAGE_BITS 8
 #define YELLOW_GENERATION_MAX 255
 
+enum YellowLegacySaveProfile
+{
+    YELLOW_LEGACY_SAVE_NONE = 0,
+    YELLOW_LEGACY_SAVE_JP = 1,
+    YELLOW_LEGACY_SAVE_INTL = 2,
+};
+
+#define YELLOW_LEGACY_SRAM_SIZE 0x8000u
+
 #define YELLOW_SAVE_SCHEMA_V1 1
 #define YELLOW_SAVE_SCHEMA_CURRENT YELLOW_SAVE_SCHEMA_V1
 
-/*
- * Capability words allow mechanics to be composed without making generation
- * number itself control behavior. Future mechanics add bits instead of
- * rewriting the core species/save model.
- */
 enum YellowCapabilityBit
 {
     YELLOW_CAP_ABILITIES = 0,
@@ -84,9 +83,6 @@ typedef uint32_t YellowCapabilityWord;
 
 #define YELLOW_CAP(bit) ((YellowCapabilityWord)1u << (bit))
 
-/*
- * Compile-time invariants. These must remain true even when content tables grow.
- */
 typedef char YellowSpeciesIdMustBe16Bit[(sizeof(YellowSpeciesId) == 2) ? 1 : -1];
 typedef char YellowMoveIdMustBe16Bit[(sizeof(YellowMoveId) == 2) ? 1 : -1];
 typedef char YellowItemIdMustBe16Bit[(sizeof(YellowItemId) == 2) ? 1 : -1];
