@@ -9,13 +9,14 @@ from pathlib import Path
 MAX_BYTES = 32 * 1024 * 1024
 RESERVE_TAIL_BYTES = 256 * 1024
 USABLE_BEFORE_RESERVE = MAX_BYTES - RESERVE_TAIL_BYTES
-WARN_PERCENT = 90.0
+WARN_PERCENT = 90
 
 
 def capacity_report(size: int) -> dict:
     if size < 0:
         raise ValueError("size must be non-negative")
     used_percent = (size / MAX_BYTES * 100.0) if MAX_BYTES else 0.0
+    warn = size * 100 >= MAX_BYTES * WARN_PERCENT
     return {
         "size_bytes": size,
         "size_mib": size / (1024 * 1024),
@@ -27,7 +28,7 @@ def capacity_report(size: int) -> dict:
         "over_native_limit": size > MAX_BYTES,
         "inside_tail_reserve": USABLE_BEFORE_RESERVE < size <= MAX_BYTES,
         "over_preferred_budget": size > USABLE_BEFORE_RESERVE,
-        "warn": used_percent >= WARN_PERCENT,
+        "warn": warn,
     }
 
 
