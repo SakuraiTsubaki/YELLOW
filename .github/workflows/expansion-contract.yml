@@ -4,24 +4,23 @@ on:
   push:
     paths:
       - "include/yellow/**"
-      - "config/expansion.json"
+      - "config/**"
       - "manifests/**"
-      - "research/rom-save-evidence.md"
-      - "tools/yellow_rom_save_audit.py"
-      - "docs/EXPANSION_ARCHITECTURE.md"
-      - "tests/test_expansion_contract.py"
-      - "tests/test_yellow_rom_save_audit.py"
+      - "research/**"
+      - "tools/**"
+      - "docs/**"
+      - "tests/**"
       - ".github/workflows/expansion-contract.yml"
   pull_request:
     paths:
       - "include/yellow/**"
-      - "config/expansion.json"
+      - "config/**"
       - "manifests/**"
-      - "research/rom-save-evidence.md"
-      - "tools/yellow_rom_save_audit.py"
-      - "docs/EXPANSION_ARCHITECTURE.md"
-      - "tests/test_expansion_contract.py"
-      - "tests/test_yellow_rom_save_audit.py"
+      - "research/**"
+      - "tools/**"
+      - "docs/**"
+      - "tests/**"
+      - ".github/workflows/expansion-contract.yml"
 
 jobs:
   contract:
@@ -31,5 +30,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate future-ready expansion and legacy save contracts
+      - name: Validate future-ready expansion, ROM budget and legacy save contracts
         run: python -m unittest discover -s tests -v
