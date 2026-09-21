@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "source_basis": "actual Yellow ROM code plus pret/pokeyellow source cross-check",
+  "profiles": [
+    {
+      "id": "yellow-jp-legacy",
+      "scope": "Pocket Monsters Pikachu Japan Rev 0A/B/C/D",
+      "sram_bytes": 32768,
+      "mapper": "MBC3+RAM+BATTERY",
+      "main": {"bank": 1, "start_cpu": "0xA598", "length": "0x0FFC", "checksum_cpu": "0xB594", "checksum": "ones-complement of 8-bit byte sum"},
+      "segments": {"player_name_length": 6, "main_data_length": "0x0737", "sprite_data_length": "0x0200", "party_data_length": "0x0158", "current_box_length": "0x0566"},
+      "boxes": {"mons_per_box": 30, "boxes_per_sram_bank": 4, "total_boxes": 8, "aggregate_checksum_cpu": "0xB598", "rom_literal_checksum_span": "0x1599", "individual_box_checksums": 0, "validation_status": "ROM-confirmed layout; aggregate checksum semantics require a real JP save sample"}
+    },
+    {
+      "id": "yellow-intl-legacy",
+      "scope": "Pokemon Yellow EN/FR/DE/IT/ES",
+      "sram_bytes": 32768,
+      "mapper": "MBC5+RAM+BATTERY",
+      "main": {"bank": 1, "start_cpu": "0xA598", "length": "0x0F8B", "checksum_cpu": "0xB523", "checksum": "ones-complement of 8-bit byte sum"},
+      "segments": {"player_name_length": 11, "main_data_length": "0x0789", "sprite_data_length": "0x0200", "party_data_length": "0x0194", "current_box_length": "0x0462"},
+      "boxes": {"mons_per_box": 20, "boxes_per_sram_bank": 6, "total_boxes": 12, "aggregate_checksum_cpu": "0xBA4C", "aggregate_checksum_span": "0x1A4C", "individual_box_checksums": 6, "validation_status": "ROM-confirmed and source-cross-checked; real save sample still required for project-local byte validation"}
+    }
+  ],
+  "migration_policy": {
+    "legacy_profiles_are_read_only_import_formats": true,
+    "do_not_conflate_jp_and_international": true,
+    "do_not_expand_in_place_inside_32k_sram": true,
+    "expanded_save_gets_its_own_versioned_schema": true,
+    "preserve_source_profile_and_source_hash_in_import_metadata": true
+  }
+}
