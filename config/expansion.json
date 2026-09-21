@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "project": "YELLOW",
+  "target": {
+    "engine_family": "generation-iii",
+    "runtime_base": "pokeemerald-expansion",
+    "remake_origin": "Pocket Monsters Pikachu / Pokemon Yellow"
+  },
+  "language_priority": [
+    "ja",
+    "ko",
+    "en"
+  ],
+  "generation_policy": {
+    "known_through": 9,
+    "reserved_from": 10,
+    "generation_id_bits": 8,
+    "guess_future_content_counts": false
+  },
+  "id_policy": {
+    "species_bits": 16,
+    "form_bits": 16,
+    "move_bits": 16,
+    "item_bits": 16,
+    "ability_bits": 16,
+    "type_bits": 16,
+    "location_bits": 16,
+    "map_bits": 16,
+    "none": 0,
+    "invalid": 65535,
+    "max_valid": 65534,
+    "table_counts_are_data_driven": true
+  },
+  "save_policy": {
+    "schema_version_bits": 16,
+    "current_schema": 1,
+    "migration_required_on_layout_change": true,
+    "preserve_unknown_future_fields": true
+  },
+  "mechanics_policy": {
+    "generation_number_does_not_imply_mechanics": true,
+    "use_capability_flags": true,
+    "reserve_future_capability_bits": true
+  }
+}
