@@ -25,9 +25,9 @@ class RomCapacityTests(unittest.TestCase):
         self.assertFalse(capacity.capacity_report(capacity.USABLE_BEFORE_RESERVE)["inside_tail_reserve"])
         self.assertTrue(capacity.capacity_report(capacity.USABLE_BEFORE_RESERVE + 1)["inside_tail_reserve"])
 
-    def test_90_percent_warns(self):
-        size = int(capacity.MAX_BYTES * 0.90)
-        self.assertTrue(capacity.capacity_report(size)["warn"])
+    def test_90_percent_warns_at_first_representable_byte(self):
+        self.assertFalse(capacity.capacity_report(capacity.WARN_BYTES - 1)["warn"])
+        self.assertTrue(capacity.capacity_report(capacity.WARN_BYTES)["warn"])
 
 
 if __name__ == "__main__":
