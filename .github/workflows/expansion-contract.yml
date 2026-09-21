@@ -5,17 +5,23 @@ on:
     paths:
       - "include/yellow/**"
       - "config/expansion.json"
-      - "manifests/generation-capacity.csv"
+      - "manifests/**"
+      - "research/rom-save-evidence.md"
+      - "tools/yellow_rom_save_audit.py"
       - "docs/EXPANSION_ARCHITECTURE.md"
       - "tests/test_expansion_contract.py"
+      - "tests/test_yellow_rom_save_audit.py"
       - ".github/workflows/expansion-contract.yml"
   pull_request:
     paths:
       - "include/yellow/**"
       - "config/expansion.json"
-      - "manifests/generation-capacity.csv"
+      - "manifests/**"
+      - "research/rom-save-evidence.md"
+      - "tools/yellow_rom_save_audit.py"
       - "docs/EXPANSION_ARCHITECTURE.md"
       - "tests/test_expansion_contract.py"
+      - "tests/test_yellow_rom_save_audit.py"
 
 jobs:
   contract:
@@ -25,5 +31,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate future-ready expansion contract
-        run: python -m unittest tests.test_expansion_contract -v
+      - name: Validate future-ready expansion and legacy save contracts
+        run: python -m unittest discover -s tests -v
