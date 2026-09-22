@@ -1,22 +1,49 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "project": "YELLOW",
   "target": {
-    "engine_family": "generation-iii",
-    "runtime_base": "pokeemerald-expansion",
-    "remake_origin": "Pocket Monsters Pikachu / Pokemon Yellow",
-    "native_rom_max_mib": 32,
-    "native_rom_max_bytes": 33554432,
-    "custom_mapper_over_32_mib": false
+    "platform_family": "game-boy",
+    "runtime_base": "original-yellow",
+    "master_reference": "Japanese Yellow revisions",
+    "gba_remake_is_separate": true
   },
-  "language_priority": ["ja", "ko", "en"],
+  "language_priority": [
+    "ja",
+    "ko",
+    "en"
+  ],
   "source_evidence": {
     "rom_manifest": "manifests/rom-baselines.csv",
     "legacy_save_profiles": "manifests/legacy-save-profiles.json",
     "hardware_capacity": "manifests/hardware-capacity.yml",
     "require_hash_bound_rom_identity": true,
-    "require_real_save_validation_before_freezing_migration": true,
     "do_not_conflate_rom_and_save_identity": true
+  },
+  "cartridge_profiles": {
+    "legacy_jp": {
+      "mapper": "MBC3+RAM+BATTERY",
+      "cartridge_type": 19,
+      "rom_bytes": 1048576,
+      "sram_bytes": 32768
+    },
+    "legacy_intl": {
+      "mapper": "MBC5+RAM+BATTERY",
+      "cartridge_type": 27,
+      "rom_bytes": 1048576,
+      "sram_bytes": 32768
+    },
+    "expanded": {
+      "mapper": "MBC5+RAM+BATTERY",
+      "cartridge_type": 27,
+      "rom_max_bytes": 8388608,
+      "rom_banks": 512,
+      "rom_bank_size": 16384,
+      "rom_bank_bits": 9,
+      "sram_max_bytes": 131072,
+      "sram_banks": 16,
+      "sram_bank_size": 8192,
+      "sram_bank_bits": 4
+    }
   },
   "generation_policy": {
     "known_through": 9,
@@ -38,28 +65,22 @@
     "max_valid": 65534,
     "table_counts_are_data_driven": true
   },
-  "rom_budget_policy": {
-    "hard_limit_bytes": 33554432,
-    "warn_percent": 90,
-    "reserve_tail_bytes": 262144,
-    "preferred_max_before_reserve_bytes": 33292288,
-    "pad_release_to_full_32_mib": false,
-    "measure_actual_linked_image": true
+  "banking_policy": {
+    "banked_pointer_bytes": 3,
+    "require_mbc5_high_rom_bank_bit": true,
+    "do_not_store_expanded_rom_bank_in_u8": true,
+    "reserve_bank_zero_semantics": true
   },
   "save_policy": {
-    "legacy_profiles": ["yellow-jp-legacy", "yellow-intl-legacy"],
+    "legacy_profiles": [
+      "yellow-jp-legacy",
+      "yellow-intl-legacy"
+    ],
     "legacy_sram_bytes": 32768,
-    "legacy_profiles_are_import_only": true,
-    "expand_in_place_inside_legacy_sram": false,
+    "expanded_sram_bytes": 131072,
     "schema_version_bits": 16,
     "current_schema": 1,
     "migration_required_on_layout_change": true,
-    "preserve_source_profile_and_hash": true,
-    "preserve_unknown_future_fields": true
-  },
-  "mechanics_policy": {
-    "generation_number_does_not_imply_mechanics": true,
-    "use_capability_flags": true,
-    "reserve_future_capability_bits": true
+    "preserve_source_profile_and_hash": true
   }
 }

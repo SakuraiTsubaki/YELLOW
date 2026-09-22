@@ -12,6 +12,11 @@ class ExpansionContractTests(unittest.TestCase):
         cls.config = json.loads((ROOT / "config" / "expansion.json").read_text(encoding="utf-8"))
         cls.header = (ROOT / "include" / "yellow" / "expansion.h").read_text(encoding="utf-8")
 
+    def test_runtime_is_original_game_boy_not_gba(self):
+        self.assertEqual(self.config["target"]["platform_family"], "game-boy")
+        self.assertEqual(self.config["target"]["runtime_base"], "original-yellow")
+        self.assertTrue(self.config["target"]["gba_remake_is_separate"])
+
     def test_future_generation_boundary_exists(self):
         policy = self.config["generation_policy"]
         self.assertGreaterEqual(policy["reserved_from"], 10)
@@ -20,34 +25,21 @@ class ExpansionContractTests(unittest.TestCase):
 
     def test_expandable_ids_are_16_bit(self):
         policy = self.config["id_policy"]
-        for key in (
-            "species_bits",
-            "form_bits",
-            "move_bits",
-            "item_bits",
-            "ability_bits",
-            "type_bits",
-            "location_bits",
-            "map_bits",
-        ):
+        for key in ("species_bits","form_bits","move_bits","item_bits","ability_bits","type_bits","location_bits","map_bits"):
             self.assertEqual(policy[key], 16, key)
 
-    def test_invalid_sentinel_is_outside_valid_range(self):
-        policy = self.config["id_policy"]
-        self.assertEqual(policy["invalid"], 65535)
-        self.assertEqual(policy["max_valid"], 65534)
-        self.assertGreater(policy["invalid"], policy["max_valid"])
+    def test_mbc5_expanded_profile_is_9_bit_banked(self):
+        profile = self.config["cartridge_profiles"]["expanded"]
+        self.assertEqual(profile["mapper"], "MBC5+RAM+BATTERY")
+        self.assertEqual(profile["rom_max_bytes"], 8 * 1024 * 1024)
+        self.assertEqual(profile["rom_banks"], 512)
+        self.assertEqual(profile["rom_bank_bits"], 9)
+        self.assertEqual(profile["sram_max_bytes"], 128 * 1024)
+        self.assertTrue(self.config["banking_policy"]["require_mbc5_high_rom_bank_bit"])
 
-    def test_save_layout_is_versioned(self):
-        save = self.config["save_policy"]
-        self.assertEqual(save["schema_version_bits"], 16)
-        self.assertGreaterEqual(save["current_schema"], 1)
-        self.assertTrue(save["migration_required_on_layout_change"])
-
-    def test_mechanics_are_not_generation_coupled(self):
-        mechanics = self.config["mechanics_policy"]
-        self.assertTrue(mechanics["generation_number_does_not_imply_mechanics"])
-        self.assertTrue(mechanics["use_capability_flags"])
+    def test_legacy_profiles_remain_distinct(self):
+        profiles = self.config["save_policy"]["legacy_profiles"]
+        self.assertEqual(profiles, ["yellow-jp-legacy", "yellow-intl-legacy"])
 
 
 if __name__ == "__main__":

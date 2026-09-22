@@ -1,28 +1,34 @@
 # YELLOW
 
-**ポケットモンスター ピカチュウ** (Generation I)를 **Game Boy Advance / Generation III 계열 기반의 현대화 리메이크**로 재구축하는 저장소입니다.
+**ポケットモンスター ピカチュウ / Pokémon Yellow 원본 Game Boy 엔진 자체를 확장하는 프로젝트**입니다.
 
 ## 현재 정본 방향
 
-- 일본판 원작과 모든 확인된 revision을 원전으로 전수조사합니다.
-- 원작의 지역, 스토리, 이벤트, NPC, 버전 고유 요소는 보존합니다.
-- 포켓몬/타입/특성/기술/진화/폼/아이템/전투·육성 규칙은 현재 검증 가능한 최신 공식 기준으로 현대화합니다.
-- 최종 실행 대상은 **GBA**입니다.
-- GB/GBC mapper, SRAM, 원본 주소 구조는 원본 분석 자료로 보존하지만 최종 런타임 엔진으로 사용하지 않습니다.
-- 미출시·미검증 세대 콘텐츠는 추측하지 않습니다.
+- 일본판 Rev 0A / B / C / D를 Master Reference로 유지합니다.
+- EN / FR / DE / IT / ES는 각 지역판 ROM·세이브 차이를 독립 프로필로 보존합니다.
+- 실행 대상은 **Game Boy / Super Game Boy / Game Boy Color 계열의 Yellow 런타임**입니다.
+- **GBA 리메이크는 별도 작업**이며 이 저장소의 런타임 기준으로 사용하지 않습니다.
+- ROM과 save는 별도 증거 계층으로 관리합니다.
+- 미출시 세대의 종수·기술수·아이템수는 추측하지 않습니다.
 
-## 기반
+## 10세대 대비 확장 축
 
-- 원본 조사: `SakuraiTsubaki/PocketMonsters-Pikachu-Disassembly`
-- 공통 현대화 연구: `SakuraiTsubaki/EMERALD`
-- 현대 코어 기준: `rh-hideout/pokeemerald-expansion@75b806a3ab57a81ff1eb6179288981f0b3cc3050`
+원본 1 MiB Yellow ROM을 그대로 증거로 보존하면서, 확장 빌드는 표준 MBC5 범위 안에서 다음 계약을 사용합니다.
 
-## 문서
+- 최대 ROM: 8 MiB / 512 × 16 KiB banks
+- 최대 SRAM: 128 KiB / 16 × 8 KiB banks
+- ROM bank ID: 9-bit
+- 확장 gameplay ID: 16-bit logical IDs
+- 데이터 테이블: 실제 수량 기반, 65,535개 고정 배열 금지
+- legacy save: JP/국제판을 각각 별도 호환·마이그레이션 프로필로 유지
 
-- `PROJECT.md` — 현재 프로젝트 방향의 정본
-- `config/remake.json` — 기계 판독 가능한 작품/엔진/원본 기준
-- `docs/REMAKE_POLICY.md` — 원작 보존과 최신화 정책
+일본판 원본은 MBC3+RAM+BATTERY, 해외판은 MBC5+RAM+BATTERY다. 확장 MBC5 프로필은 원본 ROM을 덮어쓰는 정본이 아니라 **별도의 파생 런타임 프로필**이다.
 
-저장소에 남아 있는 이전 확장 설계 문서와 도구는 삭제하지 않습니다. 원본 구조·세이브·ID·용량 연구 자료로 보존하며, GBA 리메이크에 필요한 내용만 새 런타임 설계로 옮깁니다.
+## 근거
+
+- ROM/save 기준선: `manifests/rom-baselines.csv`, `manifests/legacy-save-profiles.json`
+- 실제 ROM/save 조사: `research/rom-save-evidence.md`
+- 하드웨어 확장 계약: `manifests/hardware-capacity.yml`
+- 구현 구조: `docs/EXPANSION_ARCHITECTURE.md`
 
 ROM 바이너리는 GitHub에 커밋하지 않습니다.

@@ -4,11 +4,9 @@
 #include <stdint.h>
 
 /*
- * YELLOW expansion contract
- *
- * The modern engine representation is separate from the original Yellow SRAM
- * layouts. Legacy JP and international saves are import formats; they are not
- * widened in place.
+ * YELLOW original-Game-Boy expansion contract.
+ * This describes logical widths used by tooling/generated data. The runtime
+ * implementation remains the GB/SGB/GBC Yellow engine; GBA is out of scope.
  */
 
 typedef uint16_t YellowSpeciesId;
@@ -18,9 +16,9 @@ typedef uint16_t YellowItemId;
 typedef uint16_t YellowAbilityId;
 typedef uint16_t YellowTypeId;
 typedef uint16_t YellowLocationId;
-typedef uint16_t YellowTrainerClassId;
 typedef uint16_t YellowMapId;
 typedef uint16_t YellowSaveSchemaVersion;
+typedef uint16_t YellowRomBankId;
 
 enum
 {
@@ -44,49 +42,20 @@ enum YellowGeneration
     YELLOW_GEN_X = 10,
 };
 
-#define YELLOW_GENERATION_STORAGE_BITS 8
-#define YELLOW_GENERATION_MAX 255
-
-enum YellowLegacySaveProfile
-{
-    YELLOW_LEGACY_SAVE_NONE = 0,
-    YELLOW_LEGACY_SAVE_JP = 1,
-    YELLOW_LEGACY_SAVE_INTL = 2,
-};
-
-#define YELLOW_LEGACY_SRAM_SIZE 0x8000u
+#define YELLOW_ROM_BANK_SIZE       0x4000u
+#define YELLOW_MBC5_ROM_BANKS      512u
+#define YELLOW_MBC5_ROM_BANK_BITS  9u
+#define YELLOW_MBC5_ROM_MAX_BYTES  0x800000u
+#define YELLOW_SRAM_BANK_SIZE      0x2000u
+#define YELLOW_MBC5_SRAM_BANKS     16u
+#define YELLOW_MBC5_SRAM_MAX_BYTES 0x20000u
 
 #define YELLOW_SAVE_SCHEMA_V1 1
 #define YELLOW_SAVE_SCHEMA_CURRENT YELLOW_SAVE_SCHEMA_V1
 
-enum YellowCapabilityBit
-{
-    YELLOW_CAP_ABILITIES = 0,
-    YELLOW_CAP_NATURES,
-    YELLOW_CAP_HELD_ITEMS,
-    YELLOW_CAP_DOUBLE_BATTLES,
-    YELLOW_CAP_PHYSICAL_SPECIAL_SPLIT,
-    YELLOW_CAP_FAIRY_TYPE,
-    YELLOW_CAP_REGIONAL_FORMS,
-    YELLOW_CAP_BATTLE_FORMS,
-    YELLOW_CAP_MEGA_EVOLUTION,
-    YELLOW_CAP_Z_MOVES,
-    YELLOW_CAP_DYNAMAX,
-    YELLOW_CAP_TERASTALLIZATION,
-    YELLOW_CAP_FUTURE_MECHANIC_0 = 24,
-    YELLOW_CAP_FUTURE_MECHANIC_1,
-    YELLOW_CAP_FUTURE_MECHANIC_2,
-    YELLOW_CAP_FUTURE_MECHANIC_3,
-};
-
-typedef uint32_t YellowCapabilityWord;
-
-#define YELLOW_CAP(bit) ((YellowCapabilityWord)1u << (bit))
-
 typedef char YellowSpeciesIdMustBe16Bit[(sizeof(YellowSpeciesId) == 2) ? 1 : -1];
 typedef char YellowMoveIdMustBe16Bit[(sizeof(YellowMoveId) == 2) ? 1 : -1];
 typedef char YellowItemIdMustBe16Bit[(sizeof(YellowItemId) == 2) ? 1 : -1];
-typedef char YellowAbilityIdMustBe16Bit[(sizeof(YellowAbilityId) == 2) ? 1 : -1];
-typedef char YellowSaveSchemaMustBe16Bit[(sizeof(YellowSaveSchemaVersion) == 2) ? 1 : -1];
+typedef char YellowRomBankMustHold9Bits[(sizeof(YellowRomBankId) >= 2) ? 1 : -1];
 
-#endif /* GUARD_YELLOW_EXPANSION_H */
+#endif

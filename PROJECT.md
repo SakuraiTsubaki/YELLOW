@@ -2,28 +2,48 @@
 
 ## Canonical direction
 
-ポケットモンスター ピカチュウ를 **Game Boy Advance / Generation III 계열 기반의 현대화 리메이크**로 재구축한다.
+ポケットモンスター ピカチュウ / Pokémon Yellow의 **원본 Game Boy 런타임을 직접 확장**한다.
 
-이 문서는 현재 프로젝트 방향의 정본이다. 저장소에 남아 있는 과거 GB/GBC 확장·mapper·legacy-save 설계는 원본 분석 자료로 보존하되, 최종 실행 엔진 기준으로 사용하지 않는다.
+GBA/Generation III 리메이크는 별도 프로젝트다. 이 저장소에서는 pokeemerald, GBA 32 MiB ROM, Generation III save 구조를 YELLOW의 런타임 기준으로 사용하지 않는다.
 
-## Original baseline
+## Master Reference
 
-- `Pocket Monsters - Pikachu (Japan) (Rev 0A) (SGB Enhanced).gb`
-- `Pocket Monsters - Pikachu (Japan) (Rev B) (SGB Enhanced).gb`
-- `Pocket Monsters - Pikachu (Japan) (Rev C) (SGB Enhanced).gb`
-- `Pocket Monsters - Pikachu (Japan) (Rev D) (SGB Enhanced).gb`
+일본판 원본 ROM 네 revision을 모두 독립적으로 보존하고 조사한다.
 
-원본 조사 저장소: `SakuraiTsubaki/PocketMonsters-Pikachu-Disassembly`
+- Rev 0A
+- Rev B
+- Rev C
+- Rev D
 
-모든 일본판 revision은 독립 입력으로 조사하고 차이를 보존한다.
+지역판 EN / FR / DE / IT / ES도 각 ROM hash와 save profile을 별도로 유지한다.
 
-## Runtime baseline
+## Runtime profiles
 
-- Host: Game Boy Advance
-- Engine family: Generation III-derived
-- Modern core reference: `rh-hideout/pokeemerald-expansion@75b806a3ab57a81ff1eb6179288981f0b3cc3050`
-- Coordination/reference workspace: `SakuraiTsubaki/EMERALD`
+### Legacy exact profiles
 
-## Remake rule
+- JP: 1 MiB ROM, MBC3+RAM+BATTERY, 32 KiB SRAM
+- International: 1 MiB ROM, MBC5+RAM+BATTERY, 32 KiB SRAM
 
-원작의 지역·스토리·이벤트·NPC·버전 고유성은 보존한다. 포켓몬 시스템은 현재 검증 가능한 최신 공식 기준으로 현대화한다. 미출시/미검증 세대 데이터는 추측하지 않는다.
+### Expanded profile
+
+10세대 이후 검증 데이터까지 수용할 수 있도록 파생 빌드는 MBC5를 공통 확장 mapper로 사용한다.
+
+- 8 MiB ROM ceiling
+- 512 ROM banks
+- 128 KiB SRAM ceiling
+- 16 SRAM banks
+- 9-bit ROM bank selectors
+- 16-bit logical gameplay IDs
+- banked tables / bank+address pointers
+
+단순히 ROM header의 mapper 값을 바꾸는 것으로 끝내지 않는다. 256번 bank 이상을 사용하려면 MBC5의 high ROM-bank bit를 실제 bank-switch API에 통합해야 한다.
+
+## Save rule
+
+JP와 국제판의 기존 32 KiB save는 서로 호환되지 않는 legacy profile이다. 원형 save를 억지로 공통 구조로 덮어쓰지 않고, 확장 save에는 명시적 schema version과 migration을 둔다.
+
+## Scope boundary
+
+- 원본 GB/SGB/GBC 런타임 확장: 이 저장소
+- GBA 리메이크: 별도 작업
+- ROM 바이너리: 커밋 금지

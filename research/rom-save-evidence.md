@@ -63,12 +63,12 @@ The aggregate box checksum is stored at `BA4C` over `0x1A4C` data bytes, followe
 
 There is no single "Yellow Gen-I save format" that can safely be widened in place. Japanese and international releases differ in field lengths, box counts, box capacities, mapper family, main-data length and box-checksum layout.
 
-YELLOW therefore treats these as separate read-only import profiles:
+YELLOW therefore keeps two separate legacy profiles:
 
 1. `yellow-jp-legacy`
 2. `yellow-intl-legacy`
 
-The GBA remake uses a separate versioned expanded-save schema. Migration metadata preserves source profile and source-file hash.
+The **original Game Boy expanded runtime** gets a separate versioned save schema. The planned MBC5 expansion profile allows up to 128 KiB SRAM; migration metadata preserves the source profile and source-file hash. This is independent of any GBA remake work.
 
 ## Current save-file evidence status
 

@@ -2,71 +2,79 @@
 
 ## Goal
 
-Build the expansion layer from the **actual Yellow ROM and save formats**, then remake Yellow on top of it.
+Expand **Pokémon Yellow's original Game Boy runtime**, not a GBA remake.
 
-The project preserves original-format import compatibility while being able to absorb later-generation data without repeatedly widening IDs or replacing the save schema.
+The source ROMs remain immutable evidence. Expanded builds are derived ROMs that keep Yellow's GB/SGB/GBC execution model while removing the 1 MiB / 8-bit-ID assumptions that prevent later-generation data from being represented.
 
-## 1. Source evidence comes first
+## 1. Source profiles stay exact
 
-`manifests/rom-baselines.csv` records the nine unique Yellow/Pikachu ROM binaries currently verified by SHA-1/SHA-256. `manifests/legacy-save-profiles.json` records the two legacy save families extracted from their save code.
+The verified source family is split at the cartridge layer.
 
-A release name is not enough. ROM revision, ROM hash, legacy save profile and save-file hash are separate identities and must not be conflated.
+- Japanese Rev 0A/B/C/D: MBC3+RAM+BATTERY, 1 MiB ROM, 32 KiB SRAM.
+- EN/FR/DE/IT/ES: MBC5+RAM+BATTERY, 1 MiB ROM, 32 KiB SRAM.
 
-## 2. Yellow has two legacy save families
+The expanded profile does not overwrite those identities.
 
-The original 32 KiB SRAM layout is not universal.
+## 2. Expanded mapper profile
 
-- Japanese Rev 0A/B/C/D: MBC3, 8 boxes × 30 Pokémon, 6-byte player-name storage, larger Japanese box records, main checksum at `B594`.
-- International EN/FR/DE/IT/ES: MBC5, 12 boxes × 20 Pokémon, 11-byte player-name storage, main checksum at `B523`, aggregate plus individual box checksums.
+The common expansion target is MBC5.
 
-Both retain 240-PC-Pokémon capacity, but the byte layouts are incompatible.
+- ROM: 512 × 16 KiB banks = 8 MiB.
+- SRAM: 16 × 8 KiB banks = 128 KiB.
+- ROM bank selection therefore needs 9 bits.
+- Any old u8 bank field is a hard blocker for banks 256..511.
 
-Therefore the modern YELLOW save **does not expand either 32 KiB format in place**. Both are read-only import/migration profiles. The target GBA engine gets a separate versioned save schema.
+Japanese MBC3 code must be migrated through an explicit mapper abstraction. A header edit alone is not considered an implementation.
 
-## 3. Representation is not allocation
+## 3. 16-bit logical IDs
 
-Expandable gameplay identifiers use a 16-bit representation contract. `0xFFFF` is reserved as invalid.
+Species, forms, moves, items, abilities, types, locations and maps use a 16-bit logical representation contract. `0xFFFF` is invalid.
 
-This does not allocate 65,535-entry GBA arrays. Runtime tables remain generated from selected data, so ROM/RAM cost follows actual content rather than the numeric ID ceiling.
+This is **representation**, not allocation. Tables use verified content counts and banked indexes rather than allocating 65,535 records.
 
-## 4. Generation X is a boundary, not guessed content
+## 4. Banked data model
 
-Generation X is reserved as generation number 10. No species, form, move, item, ability, type or mechanic counts are invented for it.
+Data that can exceed one 16 KiB bank uses generated indexes carrying at least:
 
-Verified future data can be appended without another ID-width migration.
+- 9-bit ROM bank;
+- 16-bit CPU-visible address or bank-relative offset.
 
-## 5. Mechanics are capabilities
+Large tables are split by record boundaries so a single record does not silently straddle banks unless the reader explicitly supports it.
 
-Generation describes provenance. Battle behavior is enabled through independent capability flags: abilities, physical/special split, regional forms, Mega Evolution, Z-Moves, Dynamax, Terastallization and future mechanics.
+## 5. Save expansion
 
-## 6. Forms are first-class identities
+The original Japanese and international 32 KiB save layouts remain separate legacy formats.
 
-The target model separates base species, persistent form, battle-only form, cosmetic state, form arguments, regional provenance and form/evolution conditions. Later-generation form metadata is not packed into the original one-byte Gen I species representation.
+The expanded profile may use 128 KiB SRAM, but it must have:
 
-## 7. Save migration contract
+- a schema version;
+- explicit migration from each legacy profile;
+- enlarged species/move/item storage where needed;
+- data-driven Pokédex bitsets;
+- expanded box records;
+- checksums covering the new layout.
 
-Every expanded save carries a schema version. A legacy import retains at least:
+ROM capacity and SRAM capacity are separate budgets.
 
-- legacy profile (`yellow-jp-legacy` or `yellow-intl-legacy`);
-- source save SHA-256;
-- source ROM/release identity when known;
-- migration schema version.
+## 6. Generation X rule
 
-A layout change requires an explicit migration path. Raw struct size is never the sole format identifier.
+Generation 10 is a reserved provenance boundary only. No unreleased species/move/item counts are invented.
 
-The Japanese aggregate box-checksum instruction sequence has a ROM-literal `0x1599` span whose exact save-byte semantics still require validation against a real Japanese `.sav`. That uncertainty is preserved rather than guessed away.
+The purpose of the 16-bit ID and 9-bit bank contracts is to avoid another representation migration when verified data arrives.
 
-## 8. Implementation order
+## 7. Implementation order
 
-1. ROM/save evidence and validators;
-2. real user `.sav` validation for JP and international profiles;
-3. engine/toolchain bootstrap;
-4. ID-width/table-count audit across the imported engine;
-5. versioned expanded-save envelope and legacy migrators;
-6. species/forms/personal data;
-7. types, moves, abilities, items;
-8. evolution/form-change/learnset systems;
-9. modern battle mechanics;
-10. Yellow maps/story/events/assets.
+1. keep the nine verified ROM identities and two save families fixed;
+2. add a reproducible ROM expander for the MBC5 derived profile;
+3. add mapper abstraction and 9-bit ROM-bank switching;
+4. audit all ROM-bank values and banked pointers;
+5. add 16-bit logical species/move/item/form IDs;
+6. convert table readers to generated banked indexes;
+7. define the 128 KiB expanded save schema and migrators;
+8. widen party/box/trainer/wild/script formats one subsystem at a time;
+9. import verified later-generation data only after the corresponding reader is widened;
+10. preserve source-version reproduction modes separately from the expanded mode.
 
-The engine grows from Yellow's real data model outward; it is not a generic expansion pasted on before the source formats are understood.
+## 8. GBA boundary
+
+GBA/Generation III remake work is intentionally outside this repository's runtime architecture.
