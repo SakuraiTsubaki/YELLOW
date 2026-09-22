@@ -1,0 +1,37 @@
+schema_version: 1
+project: YELLOW
+status: staged_for_engine_integration
+
+mbc5:
+  low_register: 0x2000
+  high_register: 0x3000
+  bank_bits: 9
+  max_bank: 511
+
+legacy_constraint:
+  existing_bank_argument_bits: 8
+  existing_loaded_bank_tracker_bits: 8
+  consequence: banks_256_511_unreachable_without_new_abi
+
+new_abi:
+  bank_register_pair: BC
+  bank_low: C
+  bank_high_bit: B.bit0
+  loaded_bank_low_tracker: hLoadedROMBank
+  required_new_tracker: hLoadedROMBankHigh
+  far_pointer:
+    bytes: 3
+    bank_low_bits: 8
+    bank_high_bits: 1
+    romx_offset_bits: 14
+    reserved_bits: 1
+  source:
+    - asm/expansion/farptr9.inc
+    - asm/expansion/mbc5_bank9.asm
+
+integration_rules:
+  - legacy low-bank switch must always clear MBC5 ROMB1
+  - interrupt/VBlank save-restore must preserve the high bank bit
+  - direct mapper writes bypassing the common switch routine must be audited
+  - any stored ROM bank used by new high-bank content must not be a single byte
+  - Japanese MBC3 expanded profile must not switch to MBC5 until these rules are integrated
