@@ -29,6 +29,21 @@ class RomCapacityTests(unittest.TestCase):
         self.assertFalse(capacity.capacity_report(capacity.WARN_BYTES - 1)["warn"])
         self.assertTrue(capacity.capacity_report(capacity.WARN_BYTES)["warn"])
 
+    def test_parse_rom_end_symbol(self):
+        nm = (
+            "08000000 T Start\n"
+            "09123456 A __rom_end\n"
+            "02000000 B gSomeEwramSymbol\n"
+        )
+        self.assertEqual(capacity.parse_nm_rom_end(nm), 0x09123456)
+
+    def test_linked_size_math_ignores_padding(self):
+        rom_end = 0x08000000 + 19 * 1024 * 1024 + 123
+        size = rom_end - capacity.ROM_BASE_ADDRESS
+        report = capacity.capacity_report(size)
+        self.assertLess(report["size_mib"], 20)
+        self.assertGreater(report["remaining_mib"], 12)
+
 
 if __name__ == "__main__":
     unittest.main()

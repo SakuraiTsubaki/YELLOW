@@ -67,8 +67,8 @@ jobs:
           DEPRECATED_ERROR: 1
         run: make -C _upstream/pokeemerald-expansion -j$(nproc) -O all
 
-      - name: Enforce YELLOW 32 MiB ROM ceiling
-        run: |
-          ROM="$(find _upstream/pokeemerald-expansion -maxdepth 1 -type f -name '*.gba' -print -quit)"
-          test -n "$ROM"
-          python tools/check_rom_capacity.py "$ROM" --json
+      - name: Enforce physical 32 MiB ROM image ceiling
+        run: python tools/check_rom_capacity.py _upstream/pokeemerald-expansion/pokeemerald.gba --json
+
+      - name: Measure linked ROM usage from __rom_end
+        run: python tools/check_rom_capacity.py _upstream/pokeemerald-expansion/pokeemerald.elf --elf --json
