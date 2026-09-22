@@ -1,0 +1,38 @@
+schema_version: 1
+project: YELLOW
+
+stage0_mapper_native_capacity:
+  status: implemented
+  tool: tools/expand_yellow_rom.py
+  japanese:
+    source_mapper: MBC3+RAM+BATTERY
+    source_rom_mib: 1
+    derived_rom_mib: 2
+    derived_banks: 128
+    mapper_changed: false
+    sram_changed: false
+  international:
+    source_mapper: MBC5+RAM+BATTERY
+    source_rom_mib: 1
+    derived_rom_mib: 8
+    derived_banks: 512
+    mapper_changed: false
+    sram_changed: false
+  warning: >
+    Capacity shells do not make every new bank reachable. Bank selectors,
+    stored bank IDs, and banked pointers must be widened before allocating
+    content into newly added ranges.
+
+stage1_common_mbc5_runtime:
+  status: next
+  goal: migrate Japanese expanded builds to MBC5 and implement a common 9-bit ROM-bank API
+  blockers:
+    - locate every mapper write path in each Japanese revision
+    - locate every stored ROM-bank byte
+    - add MBC5 ROMB0 and ROMB1 writes
+    - verify bank 0 behavior and interrupt-safe restoration
+
+stage2_expanded_save:
+  status: blocked_on_save_engine_patch
+  goal_sram_kib: 128
+  rule: do not change RAM size header until save banking/checksum/migration code is implemented
