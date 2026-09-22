@@ -51,3 +51,24 @@ jobs:
 
       - name: Audit widened persistent storage
         run: python tools/audit_gen10_storage.py _upstream/pokeemerald-expansion --mode patched --json
+
+      - name: Install GBA build toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends binutils-arm-none-eabi gcc-arm-none-eabi libnewlib-arm-none-eabi libpng-dev python3
+
+      - name: Build patched Emerald engine
+        env:
+          GAME_VERSION: EMERALD
+          GAME_REVISION: 0
+          GAME_LANGUAGE: ENGLISH
+          COMPARE: 0
+          UNUSED_ERROR: 1
+          DEPRECATED_ERROR: 1
+        run: make -C _upstream/pokeemerald-expansion -j$(nproc) -O all
+
+      - name: Enforce YELLOW 32 MiB ROM ceiling
+        run: |
+          ROM="$(find _upstream/pokeemerald-expansion -maxdepth 1 -type f -name '*.gba' -print -quit)"
+          test -n "$ROM"
+          python tools/check_rom_capacity.py "$ROM" --json
