@@ -1,0 +1,60 @@
+schema_version: 1
+project: YELLOW
+status: format_v1_defined_tooling_implemented
+
+physical_layout:
+  mapper: MBC5+RAM+BATTERY
+  total_bytes: 131072
+  bank_size_bytes: 8192
+  banks: 16
+
+legacy_region:
+  banks: [0, 1, 2, 3]
+  offset_start: 0x00000
+  offset_end_exclusive: 0x08000
+  bytes: 32768
+  rule: preserve_byte_for_byte
+  accepted_profiles:
+    - yellow-jp-legacy
+    - yellow-intl-legacy
+
+extension_region:
+  banks: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+  offset_start: 0x08000
+  offset_end_exclusive: 0x20000
+  bytes: 98304
+  initial_fill: 0xFF
+
+header_v1:
+  bank: 4
+  offset: 0x08000
+  size: 64
+  magic: YLX1
+  byte_order: little
+  fields:
+    - {offset: 0x00, size: 4, name: magic}
+    - {offset: 0x04, size: 2, name: schema_version}
+    - {offset: 0x06, size: 2, name: header_size}
+    - {offset: 0x08, size: 1, name: source_profile}
+    - {offset: 0x09, size: 1, name: flags}
+    - {offset: 0x0A, size: 2, name: reserved}
+    - {offset: 0x0C, size: 4, name: extension_payload_bytes}
+    - {offset: 0x10, size: 32, name: source_legacy_save_sha256}
+    - {offset: 0x30, size: 2, name: payload_sum16}
+    - {offset: 0x32, size: 2, name: header_sum16}
+    - {offset: 0x34, size: 12, name: reserved_tail}
+  checksum:
+    algorithm: unsigned_byte_sum_mod_65536
+    payload_scope: bytes_after_header_through_0x1ffff
+    header_scope: 64_byte_header_with_header_sum16_zeroed
+
+migration_contract:
+  interpret_legacy_before_destroying_it: true
+  japanese_and_international_decoders_remain_separate: true
+  source_save_hash_is_preserved: true
+  extension_can_be_regenerated_from_legacy_only_until_first_expanded_write: true
+  do_not_change_rom_ram_header_to_128k_until_runtime_sram_banking_is_integrated: true
+
+tooling:
+  expander: tools/expand_yellow_save.py
+  tests: tests/test_expand_yellow_save.py
