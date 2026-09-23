@@ -47,3 +47,22 @@ jobs:
 
       - name: Audit stock 8-bit runtime chokepoints
         run: python tools/audit_runtime_id_widths.py _reference/pokeyellow --json
+
+      - name: Checkout RGBDS
+        uses: actions/checkout@v4
+        with:
+          repository: gbdev/rgbds
+          ref: v1.0.3
+          path: _tools/rgbds
+
+      - name: Install RGBDS
+        working-directory: _tools/rgbds
+        run: |
+          sudo apt-get update
+          sudo apt-get install -yq bison libpng-dev pkg-config
+          sudo make -j$(nproc) install
+
+      - name: Assemble YELLOW expansion ABI harness
+        run: |
+          rgbasm -Wall -Wextra -o /tmp/yellow-expansion.o tests/asm/expansion_harness.asm
+          rgblink -o /tmp/yellow-expansion.gb /tmp/yellow-expansion.o
