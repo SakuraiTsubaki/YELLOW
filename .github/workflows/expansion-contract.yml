@@ -48,6 +48,9 @@ jobs:
       - name: Audit stock 8-bit runtime chokepoints
         run: python tools/audit_runtime_id_widths.py _reference/pokeyellow --json
 
+      - name: Audit stock mapper write surfaces
+        run: python tools/audit_mapper_paths.py --source-root _reference/pokeyellow --json
+
       - name: Checkout RGBDS
         uses: actions/checkout@v4
         with:
