@@ -17,13 +17,19 @@ INCLUDE "asm/expansion/item16.asm"
 INCLUDE "asm/expansion/wram_id16.asm"
 
 SECTION "Harness WRAM", WRAM0
-wHarnessBuffer:: ds 16
+wHarnessBuffer:: ds YELLOW_SPECIES_CORE_V1_SIZE
 
-SECTION "Harness Low Data", ROMX[$4000], BANK[$01]
-HarnessLowData::
-    db $11, $12, $13, $14
+SECTION "Harness Low Species", ROMX[$4000], BANK[$01]
+HarnessLowSpecies::
+    yellow_species_core_v1 35, 55, 30, 90, 50, 40, 50, 190, 1, 1, 64, 0, 127, 70, 20, 0
+HarnessLowSpeciesEnd::
 
-SECTION "Harness High Data", ROMX[$4000], BANK[$100]
+SECTION "Harness High Species", ROMX[$4000], BANK[$100]
+HarnessHighSpecies::
+    yellow_species_core_v1 100, 120, 90, 110, 130, 95, 110, 45, $0102, $0103, 320, 4, 127, 50, 40, 1
+HarnessHighSpeciesEnd::
+
+SECTION "Harness High Data", ROMX[$4100], BANK[$100]
 HarnessHighData::
     db $21, $22, $23, $24
 
@@ -33,33 +39,34 @@ HarnessTopData::
 
 SECTION "Harness Species Index", ROMX[$5000], BANK[$02]
 YellowSpeciesIndex16::
-    yellow_farptr9 HarnessLowData
-    yellow_farptr9 HarnessHighData
-    yellow_farptr9 HarnessTopData
+    yellow_farptr9 HarnessLowSpecies
+    yellow_farptr9 HarnessHighSpecies
 YellowSpeciesIndex16End::
 
 SECTION "Harness Move Index", ROMX[$5100], BANK[$02]
 YellowMoveIndex16::
     yellow_farptr9 HarnessHighData
-    yellow_farptr9 HarnessLowData
+    yellow_farptr9 HarnessLowSpecies
 YellowMoveIndex16End::
 
 SECTION "Harness Item Index", ROMX[$5200], BANK[$02]
 YellowItemIndex16::
     yellow_farptr9 HarnessTopData
-    yellow_farptr9 HarnessLowData
+    yellow_farptr9 HarnessLowSpecies
 YellowItemIndex16End::
 
 SECTION "Harness Descriptors", ROM0
 YellowSpeciesTableDescriptor::
-    yellow_table16_descriptor YellowSpeciesIndex16, 3
+    yellow_table16_descriptor YellowSpeciesIndex16, 2
 YellowMoveTableDescriptor::
     yellow_table16_descriptor YellowMoveIndex16, 2
 YellowItemTableDescriptor::
     yellow_table16_descriptor YellowItemIndex16, 2
 HarnessDescriptorsEnd::
 
-ASSERT YellowSpeciesIndex16End - YellowSpeciesIndex16 == 9
+ASSERT HarnessLowSpeciesEnd - HarnessLowSpecies == YELLOW_SPECIES_CORE_V1_SIZE
+ASSERT HarnessHighSpeciesEnd - HarnessHighSpecies == YELLOW_SPECIES_CORE_V1_SIZE
+ASSERT YellowSpeciesIndex16End - YellowSpeciesIndex16 == 6
 ASSERT YellowMoveIndex16End - YellowMoveIndex16 == 6
 ASSERT YellowItemIndex16End - YellowItemIndex16 == 6
 ASSERT HarnessDescriptorsEnd - YellowSpeciesTableDescriptor == 18
@@ -75,14 +82,11 @@ HarnessCopyHighData::
     ei
     ret
 
-HarnessResolveSpecies2::
-    ld bc, 2
-    call YellowResolveSpeciesRecord16
-    ret c
+HarnessLoadHighSpeciesCore::
+    ld bc, 1
     ld hl, wHarnessBuffer
-    ld a, 4
     di
-    call YellowCopyFromBank9Locked
+    call YellowCopySpeciesCore16Locked
     ei
     ret
 
