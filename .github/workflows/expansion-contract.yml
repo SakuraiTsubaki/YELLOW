@@ -69,3 +69,11 @@ jobs:
         run: |
           rgbasm -Wall -Wextra -o /tmp/yellow-expansion.o tests/asm/expansion_harness.asm
           rgblink -o /tmp/yellow-expansion.gb /tmp/yellow-expansion.o
+
+      - name: Build structural Yellow reference with map
+        run: make -C _reference/pokeyellow -j$(nproc) DEBUG=1 yellow
+
+      - name: Report structural Yellow bank slack
+        run: |
+          echo "=== ROM0 / ROMX map slack ==="
+          grep -E "^(ROM0|ROMX) bank|SLACK:" _reference/pokeyellow/pokeyellow.map || true
