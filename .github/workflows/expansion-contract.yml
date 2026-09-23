@@ -75,5 +75,9 @@ jobs:
 
       - name: Report structural Yellow bank slack
         run: |
-          echo "=== ROM0 / ROMX map slack ==="
-          grep -E "^(ROM0|ROMX) bank|SLACK:" _reference/pokeyellow/pokeyellow.map || true
+          echo "=== map head ==="
+          sed -n '1,220p' _reference/pokeyellow/pokeyellow.map
+          echo "=== map memory tail ==="
+          tail -n 220 _reference/pokeyellow/pokeyellow.map
+          echo "=== free/empty/slack markers ==="
+          grep -i -E "free|empty|slack|used|total" _reference/pokeyellow/pokeyellow.map || true
