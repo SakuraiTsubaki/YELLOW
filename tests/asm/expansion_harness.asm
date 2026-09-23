@@ -6,6 +6,7 @@ DEF rROMB1 EQU $3000
 SECTION "Harness HRAM", HRAM
 hLoadedROMBank:: db
 
+SECTION "Harness Expansion Code", ROM0
 INCLUDE "asm/expansion/id16.inc"
 INCLUDE "asm/expansion/farptr9.inc"
 INCLUDE "asm/expansion/mbc5_bank9.asm"
