@@ -1,0 +1,10 @@
+release_id,cartridge_type,ram_enable_0000,rom_bank_low_2000,rom_bank_high_3000,ram_bank_4000,mode_latch_6000
+yellow-jp-0,0x13,12,22,0,17,10
+yellow-jp-1,0x13,11,16,0,16,8
+yellow-jp-2,0x13,11,16,0,16,8
+yellow-jp-3,0x13,12,16,0,17,10
+yellow-es,0x1B,10,20,0,16,8
+yellow-de,0x1B,10,20,0,16,8
+yellow-fr,0x1B,10,20,0,16,8
+yellow-it,0x1B,10,20,0,16,8
+yellow-en,0x1B,10,20,0,16,8
