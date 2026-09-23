@@ -1,0 +1,38 @@
+schema_version: 1
+project: YELLOW
+status: v1_defined
+
+entry:
+  bytes: 3
+  encoding: farptr9
+  fields:
+    logical_id: implicit_array_index
+    target_bank_bits: 9
+    target_romx_offset_bits: 14
+    invalid_entry: "FF FF FF"
+
+single_bank_index:
+  max_bytes: 16384
+  bytes_per_entry: 3
+  max_entries: 5461
+  intended_for:
+    - species
+    - moves
+    - items
+    - abilities
+    - forms
+  rationale: >
+    This removes all 8-bit ID ceilings for Generation-10-scale catalogs while
+    keeping lookup code small on the original Game Boy CPU.
+
+future_paging:
+  threshold_entries: 5462
+  rule: logical IDs remain unchanged; only index lookup becomes paged
+
+runtime_flow:
+  - load 16-bit logical ID
+  - range-check against generated table count
+  - multiply ID by 3
+  - read farptr9
+  - switch MBC5 bank through 9-bit bank ABI
+  - consume target record
