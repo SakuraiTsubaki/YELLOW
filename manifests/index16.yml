@@ -1,6 +1,6 @@
-schema_version: 1
+schema_version: 2
 project: YELLOW
-status: v1_defined
+status: resolvers_implemented_and_rgbds_compiled
 
 entry:
   bytes: 3
@@ -11,28 +11,34 @@ entry:
     target_romx_offset_bits: 14
     invalid_entry: "FF FF FF"
 
+descriptor:
+  location: ROM0
+  bytes: 6
+  fields:
+    - {offset: 0, size: 2, name: count}
+    - {offset: 2, size: 2, name: index_bank}
+    - {offset: 4, size: 2, name: index_address}
+
 single_bank_index:
   max_bytes: 16384
   bytes_per_entry: 3
   max_entries: 5461
-  intended_for:
-    - species
-    - moves
-    - items
-    - abilities
-    - forms
-  rationale: >
-    This removes all 8-bit ID ceilings for Generation-10-scale catalogs while
-    keeping lookup code small on the original Game Boy CPU.
+  active_resolvers:
+    - YellowResolveSpeciesRecord16
+    - YellowResolveMoveRecord16
+    - YellowResolveItemRecord16
+
+runtime_flow:
+  - save current 9-bit ROM bank
+  - load 16-bit logical ID
+  - resolve table descriptor from ROM0
+  - range-check ID
+  - switch to descriptor index bank
+  - read farptr9
+  - switch to record bank
+  - consume/copy record
+  - restore previous 9-bit ROM bank
 
 future_paging:
   threshold_entries: 5462
-  rule: logical IDs remain unchanged; only index lookup becomes paged
-
-runtime_flow:
-  - load 16-bit logical ID
-  - range-check against generated table count
-  - multiply ID by 3
-  - read farptr9
-  - switch MBC5 bank through 9-bit bank ABI
-  - consume target record
+  rule: logical IDs remain unchanged; descriptor/index implementation may become paged
