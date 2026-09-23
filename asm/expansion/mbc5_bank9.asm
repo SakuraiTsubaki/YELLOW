@@ -11,6 +11,15 @@
 ; switch routine is changed to clear hLoadedROMBankHigh/rROMB1. New content in
 ; banks 256..511 uses YellowBankswitch9.
 
+YellowGetLoadedROMBank9::
+; Output: BC = currently selected bank 0..511.
+    ldh a, [hLoadedROMBank]
+    ld c, a
+    ldh a, [hLoadedROMBankHigh]
+    and 1
+    ld b, a
+    ret
+
 YellowSetROMBank9::
 ; Input: BC = bank 0..511 (B bit0 = bit8, C = low byte)
 ; Preserves: DE, HL
