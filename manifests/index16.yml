@@ -1,6 +1,6 @@
 schema_version: 2
 project: YELLOW
-status: resolvers_implemented_and_rgbds_compiled
+status: v1_defined_with_data_only_upper_banks
 
 entry:
   bytes: 3
@@ -11,34 +11,35 @@ entry:
     target_romx_offset_bits: 14
     invalid_entry: "FF FF FF"
 
-descriptor:
-  location: ROM0
-  bytes: 6
-  fields:
-    - {offset: 0, size: 2, name: count}
-    - {offset: 2, size: 2, name: index_bank}
-    - {offset: 4, size: 2, name: index_address}
-
 single_bank_index:
   max_bytes: 16384
   bytes_per_entry: 3
   max_entries: 5461
-  active_resolvers:
-    - YellowResolveSpeciesRecord16
-    - YellowResolveMoveRecord16
-    - YellowResolveItemRecord16
-
-runtime_flow:
-  - save current 9-bit ROM bank
-  - load 16-bit logical ID
-  - resolve table descriptor from ROM0
-  - range-check ID
-  - switch to descriptor index bank
-  - read farptr9
-  - switch to record bank
-  - consume/copy record
-  - restore previous 9-bit ROM bank
+  intended_for:
+    - species
+    - moves
+    - items
+    - abilities
+    - forms
 
 future_paging:
   threshold_entries: 5462
-  rule: logical IDs remain unchanged; descriptor/index implementation may become paged
+  rule: logical IDs remain unchanged; only index lookup becomes paged
+
+runtime_flow:
+  - load 16-bit logical ID
+  - range-check against generated table count
+  - multiply ID by 3
+  - read farptr9
+  - if target bank is below 256, legacy-compatible readers may access it directly
+  - if target bank is 256..511, copy the record to WRAM with YellowCopyFromBank9Locked
+  - consume the WRAM copy after ROMB1 has been cleared and interrupts can resume
+
+upper_bank_rule:
+  executable_code_allowed: false
+  data_records_allowed: true
+  rationale: >
+    Stock Yellow has one-byte active-bank trackers and direct low-bank writes in
+    interrupt-sensitive code. Data-only upper banks let YELLOW use the full
+    8 MiB MBC5 space without requiring every legacy bank path to become 9-bit
+    before later-generation tables can grow.
