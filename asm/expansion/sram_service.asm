@@ -3,9 +3,9 @@
 ; Include this file while assembling ROM bank $40. Bytes inside the LOAD block
 ; are emitted in the ROM service bank but linked to execute from SRAM bank 15.
 
-DEF YELLOW_SRAM_SERVICE_ADDR EQU $BF00
+DEF YELLOW_SRAM_SERVICE_ADDR EQU $BC00
 DEF YELLOW_SRAM_SERVICE_BANK EQU 15
-DEF YELLOW_SRAM_SERVICE_MAX  EQU $0100
+DEF YELLOW_SRAM_SERVICE_MAX  EQU $0400
 
 YellowSRAMServiceImage::
 LOAD "YELLOW SRAM Runtime Service", SRAM[YELLOW_SRAM_SERVICE_ADDR], BANK[YELLOW_SRAM_SERVICE_BANK]
@@ -27,7 +27,7 @@ YellowInstallSRAMServiceLocked::
 ;   - executing from the low expansion service bank (normally bank $40)
 ;   - interrupts disabled
 ; POSTCONDITION:
-;   - service image copied to SRAM bank 15 at $BF00
+;   - service image copied to SRAM bank 15 at $BC00
 ;   - SRAM disabled
     ld a, $0a
     ld [rRAMG], a
@@ -52,7 +52,7 @@ YellowInstallSRAMServiceLocked::
 
 YellowEnterSRAMServiceLocked::
 ; Enable and select SRAM bank 15. Callers can then call service labels such as
-; YellowCopySpeciesCore16Locked, which are linked to $BF00+ addresses.
+; YellowCopySpeciesCore16Locked, which are linked to $BC00+ addresses.
     ld a, $0a
     ld [rRAMG], a
     ld a, YELLOW_SRAM_SERVICE_BANK
