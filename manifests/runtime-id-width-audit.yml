@@ -1,0 +1,71 @@
+schema_version: 1
+project: YELLOW
+status: source_width_chokepoints_confirmed
+
+evidence:
+  master_reference: actual Japanese Yellow ROM revisions
+  structural_reference:
+    repository: pret/pokeyellow
+    commit: e89ead154b9968aa50eed9328ff2b38b6c194382
+  rule: public source is structural evidence, not a replacement for Japanese ROM verification
+
+layers:
+  persistent:
+    status: extension_sidecar_v1_defined
+    blockers:
+      - box_struct species is one byte
+      - box_struct four move IDs are one byte each
+    solution:
+      - keep legacy low bytes
+      - store high bytes and later-generation fields in SRAM bank 4 sidecar
+
+  runtime:
+    status: blocking_ids_above_255
+    confirmed_byte_fields:
+      - battle_struct.species
+      - battle_struct.moves[4]
+      - wCurSpecies
+      - wCurPartySpecies
+      - wCurItem
+      - wMoveNum
+      - wPlayerSelectedMove
+      - wEnemySelectedMove
+      - wCapturedMonSpecies
+      - wPlayerStarter
+      - wRivalStarter
+      - wFossilMon
+      - wEnemyMonOrTrainerClass
+    rule: no species/move/item ID above 255 may be enabled until its runtime path is widened
+
+  rom_tables:
+    status: blocking_ids_above_255
+    targets:
+      - wild encounter records
+      - trainer party records
+      - base stats index
+      - names index
+      - evolution/learnset index
+      - sprites/palettes/cries index
+      - script operands carrying species/move/item IDs
+    solution: generated 16-bit logical IDs plus 9-bit-bank indexes
+
+  dex:
+    status: redesign_required
+    issue: seen/owned arrays are compile-time NUM_POKEMON bitsets in legacy WRAM/save
+    solution: keep legacy 151-compatible flags and store expanded dex bitsets in extension SRAM
+
+  protocol:
+    status: redesign_required
+    targets:
+      - link battle party transfer
+      - trade party transfer
+      - serial patch lists
+    rule: legacy peers must never receive extended records without version negotiation
+
+priority:
+  - runtime species
+  - runtime moves
+  - runtime items
+  - ROM table formats
+  - expanded Pokedex
+  - link/trade protocol
