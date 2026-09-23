@@ -1,71 +1,89 @@
-; YELLOW common MBC5 9-bit bank-switch ABI
+; YELLOW common MBC5 9-bit data-bank ABI
 ;
-; Integration contract:
-; - rROMB0 = $2000 (MBC5 ROM bank low byte)
-; - rROMB1 = $3000 (MBC5 ROM bank high bit)
-; - hLoadedROMBank remains the legacy low-byte tracker.
-; - hLoadedROMBankHigh is one new HRAM byte holding bank bit 8.
-; - JumpToAddress is the existing Yellow jp hl trampoline.
+; Safety model:
+; - Legacy engine execution stays in ROM banks 0..255.
+; - ROM banks 256..511 are data-only.
+; - ROMB1 must be 0 whenever interrupts are enabled / legacy code is running.
+; - High-bank data access occurs only in an interrupt-locked copy window.
 ;
-; Existing low-bank callers can continue using the legacy ABI once their common
-; switch routine is changed to clear hLoadedROMBankHigh/rROMB1. New content in
-; banks 256..511 uses YellowBankswitch9.
+; This avoids widening every stock Yellow bank tracker before the upper 4 MiB
+; can be used for Generation-10-scale data tables.
 
-YellowGetLoadedROMBank9::
-; Output: BC = currently selected bank 0..511.
-    ldh a, [hLoadedROMBank]
-    ld c, a
-    ldh a, [hLoadedROMBankHigh]
-    and 1
-    ld b, a
-    ret
-
-YellowSetROMBank9::
-; Input: BC = bank 0..511 (B bit0 = bit8, C = low byte)
-; Preserves: DE, HL
+YellowSetROMBank9Locked::
+; Input: BC = bank 0..511 (B bit0 = bank bit 8, C = low byte)
+; PRECONDITION: interrupts are disabled and caller will restore a low bank
+; before re-enabling them.
     ld a, c
-    ldh [hLoadedROMBank], a
     ld [rROMB0], a
-
     ld a, b
     and 1
-    ldh [hLoadedROMBankHigh], a
     ld [rROMB1], a
     ret
 
-YellowBankswitchCommonLow::
-; Compatibility replacement for the old 8-bit BankswitchCommon.
-; Input: A = bank 0..255.
-; Important: explicitly clears the MBC5 high bit so returning from a high bank
-; can never leave legacy code in bank 256+ by accident.
-    ldh [hLoadedROMBank], a
-    ld [rROMB0], a
+YellowRestoreLegacyROMBankLocked::
+; Input: A = legacy bank 0..255.
+; Clears ROMB1 first, then restores the low byte.
+; PRECONDITION: interrupts disabled.
+    ld b, a
     xor a
-    ldh [hLoadedROMBankHigh], a
     ld [rROMB1], a
+    ld a, b
+    ld [rROMB0], a
     ret
 
-YellowBankswitch9::
-; Input: BC = bank 0..511, HL = callable address in $4000..$7fff.
-; Saves/restores both current bank bytes around the far call.
-    ldh a, [hLoadedROMBankHigh]
-    ld d, a
+YellowCopyFromBank9Locked::
+; Copy 1..255 bytes from a 9-bit MBC5 ROM bank into WRAM.
+;
+; Input:
+;   BC = source bank 0..511
+;   DE = source address in ROMX ($4000..$7fff)
+;   HL = destination
+;   A  = byte count (1..255)
+;
+; PRECONDITION:
+;   - interrupts disabled
+;   - ROMB1 is zero on entry
+;   - hLoadedROMBank contains the active legacy low bank
+;
+; POSTCONDITION:
+;   - original legacy low bank restored
+;   - ROMB1 cleared to zero
+;   - hLoadedROMBank is unchanged
+;
+; This routine intentionally never executes code from bank 256..511.
+    push af
+
+    ; Select requested data bank without changing the legacy tracker.
+    ld a, c
+    ld [rROMB0], a
+    ld a, b
+    and 1
+    ld [rROMB1], a
+
+    ; Save the legacy bank after BC is no longer needed for bank selection.
     ldh a, [hLoadedROMBank]
-    ld e, a
-    push de
+    ld b, a
 
-    call YellowSetROMBank9
-    call JumpToAddress
+    pop af
+    ld c, a
+.copy
+    ld a, [de]
+    inc de
+    ld [hli], a
+    dec c
+    jr nz, .copy
 
-    pop de
-    ld b, d
-    ld c, e
-    jp YellowSetROMBank9
+    ; Return to the normal Yellow invariant: ROMB1 == 0.
+    xor a
+    ld [rROMB1], a
+    ld a, b
+    ld [rROMB0], a
+    ret
 
 YellowDecodeFarPtr9::
 ; Input: HL -> packed 3-byte far pointer (yellow_farptr9)
 ; Output: BC = bank 0..511
-;         DE = ROMX CPU address $4000..$7fff
+;         DE = target ROMX address $4000..$7fff
 ; Clobbers: A
     ld c, [hl]
     inc hl
@@ -83,15 +101,3 @@ YellowDecodeFarPtr9::
     or $40
     ld d, a
     ret
-
-MACRO yellow_farcall9
-    ld bc, BANK(\1)
-    ld hl, \1
-    call YellowBankswitch9
-ENDM
-
-MACRO yellow_farjp9
-    ld bc, BANK(\1)
-    ld hl, \1
-    jp YellowBankswitch9
-ENDM
