@@ -1,0 +1,29 @@
+schema_version: 1
+project: YELLOW
+status: implemented
+tool: tools/pack_banked_records.py
+input:
+  csv_columns: [id, path]
+  record_rule: each record must fit wholly inside one 16 KiB ROMX bank
+packing:
+  default_start_bank: 64
+  default_end_bank: 511
+  bank_size_bytes: 16384
+  fill_byte: 0xFF
+  configurable_alignment: true
+  records_sorted_by_logical_id: true
+  records_may_cross_bank_boundary: false
+outputs:
+  bank_payload:
+    description: contiguous 16 KiB bank images from first used bank through last used bank
+  index:
+    entry_bytes: 3
+    encoding: farptr9
+    missing_id: "FF FF FF"
+  layout_csv:
+    fields: [id, bank, address, bank_offset, size]
+generation10_contract:
+  supports_bank_256_to_511: true
+  supports_logical_ids_above_255: true
+  source_rom_banks_0_to_63_are_not_overwritten_by_default: true
+  no_fixed_species_move_item_count: true
