@@ -1,0 +1,16 @@
+schema_version: 1
+project: YELLOW
+record_bytes: 16
+logical_id_bits: 16
+fields:
+  price: 32
+  pocket: 8
+  importance: 8
+  hold_effect: 16
+  parameter: 16
+  fling_power: 8
+  battle_usage: 8
+  field_use: 16
+  flags: 16
+loader: YellowCopyItemCore16Locked
+upper_bank_policy: copy_to_wram

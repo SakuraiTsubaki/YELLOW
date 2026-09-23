@@ -1,0 +1,17 @@
+schema_version: 1
+project: YELLOW
+record_bytes: 16
+logical_id_bits: 16
+fields:
+  type: 16
+  effect: 16
+  power: 8
+  accuracy: 8
+  pp: 8
+  priority: signed_8
+  category: 8
+  target: 8
+  effect_chance: 8
+  flags: 32
+loader: YellowCopyMoveCore16Locked
+upper_bank_policy: copy_to_wram
