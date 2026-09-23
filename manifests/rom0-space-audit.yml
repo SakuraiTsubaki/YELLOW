@@ -1,0 +1,29 @@
+schema_version: 1
+project: YELLOW
+status: no_common_rom0_patch_cavity
+
+evidence:
+  source: actual verified Yellow ROMs
+  summary: research/rom0-padding-summary.csv
+  metric: longest contiguous 0x00 or 0xFF run inside bank 0
+
+result:
+  japanese:
+    rev_0a_longest_bytes: 7
+    rev_b_longest_bytes: 8
+    rev_c_longest_bytes: 8
+    rev_d_longest_bytes: 26
+  international_longest_bytes_range: [12, 19]
+  conclusion: >
+    There is no safely reusable ROM0 padding cavity common to every verified
+    Yellow release large enough for the 16-bit resolver / 9-bit bank service.
+
+policy:
+  do_not_overwrite_rom0_padding_as_shared_expansion_space: true
+  reserve_new_service_bank: 0x40
+  reason: >
+    Bank 0x40 is outside every 1 MiB source ROM and becomes available only in
+    derived expanded images, so it cannot destroy retail data.
+  rom0_strategy: >
+    Prefer the smallest possible relocation/trampoline only after linker-map
+    and RAM-execution options are audited.
