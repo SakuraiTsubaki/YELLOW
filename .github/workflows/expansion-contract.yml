@@ -3,6 +3,7 @@ name: Expansion contract
 on:
   push:
     paths:
+      - "asm/**"
       - "include/yellow/**"
       - "config/**"
       - "manifests/**"
@@ -13,6 +14,7 @@ on:
       - ".github/workflows/expansion-contract.yml"
   pull_request:
     paths:
+      - "asm/**"
       - "include/yellow/**"
       - "config/**"
       - "manifests/**"
@@ -26,9 +28,22 @@ jobs:
   contract:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout YELLOW
+        uses: actions/checkout@v4
+
+      - name: Checkout structural Yellow reference
+        uses: actions/checkout@v4
+        with:
+          repository: pret/pokeyellow
+          ref: e89ead154b9968aa50eed9328ff2b38b6c194382
+          path: _reference/pokeyellow
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Validate original-Game-Boy expansion contracts
         run: python -m unittest discover -s tests -v
+
+      - name: Audit stock 8-bit runtime chokepoints
+        run: python tools/audit_runtime_id_widths.py _reference/pokeyellow --json
