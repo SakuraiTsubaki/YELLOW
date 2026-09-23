@@ -1,6 +1,6 @@
-schema_version: 1
+schema_version: 2
 project: YELLOW
-status: staged_for_engine_integration
+status: data_only_upper_banks_defined
 
 mbc5:
   low_register: 0x2000
@@ -8,30 +8,42 @@ mbc5:
   bank_bits: 9
   max_bank: 511
 
-legacy_constraint:
-  existing_bank_argument_bits: 8
-  existing_loaded_bank_tracker_bits: 8
-  consequence: banks_256_511_unreachable_without_new_abi
+execution_policy:
+  executable_bank_min: 0
+  executable_bank_max: 255
+  upper_bank_min: 256
+  upper_bank_max: 511
+  upper_banks_are_data_only: true
+  invariant: ROMB1 must be zero whenever legacy code or interrupts can run
+
+reason:
+  - stock Yellow tracks active ROM banks in one byte
+  - verified retail ROMs contain no direct 0x3000 high-bank writes
+  - structural source has direct rROMB writes outside the common bank routine
+  - making upper banks data-only avoids corrupting VBlank/interrupt bank restoration
 
 new_abi:
-  bank_register_pair: BC
-  bank_low: C
-  bank_high_bit: B.bit0
-  loaded_bank_low_tracker: hLoadedROMBank
-  required_new_tracker: hLoadedROMBankHigh
-  far_pointer:
-    bytes: 3
-    bank_low_bits: 8
-    bank_high_bits: 1
-    romx_offset_bits: 14
-    reserved_bits: 1
-  source:
-    - asm/expansion/farptr9.inc
-    - asm/expansion/mbc5_bank9.asm
+  pointer_encoding: farptr9
+  pointer_bytes: 3
+  bank_bits: 9
+  romx_offset_bits: 14
+  copy_primitive: YellowCopyFromBank9Locked
+  copy_preconditions:
+    - interrupts disabled
+    - ROMB1 zero on entry
+    - hLoadedROMBank contains current legacy low bank
+  copy_postconditions:
+    - original low bank restored
+    - ROMB1 cleared
+    - no code executed from bank 256..511
 
 integration_rules:
-  - legacy low-bank switch must always clear MBC5 ROMB1
-  - interrupt/VBlank save-restore must preserve the high bank bit
-  - direct mapper writes bypassing the common switch routine must be audited
-  - any stored ROM bank used by new high-bank content must not be a single byte
-  - Japanese MBC3 expanded profile must not switch to MBC5 until these rules are integrated
+  - high-bank records are copied to WRAM before consumption
+  - legacy farcall/farjp remains restricted to banks below 256
+  - do not persist 9-bit bank values in stock one-byte bank variables
+  - Japanese MBC3 runtime still requires mapper migration before using this ABI
+  - SRAM 128 KiB migration is separate from ROM bank migration
+
+evidence:
+  mapper_audit: manifests/mapper-write-audit.yml
+  actual_rom_summary: research/mapper-write-summary.csv
