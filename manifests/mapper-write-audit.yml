@@ -1,0 +1,52 @@
+schema_version: 1
+project: YELLOW
+status: actual_rom_mapper_write_candidates_recorded
+
+evidence:
+  roms: 9 unique verified Yellow binaries
+  scan_instruction: "EA ll hh = LD [a16], A"
+  caution: >
+    Raw ROM scanning identifies instruction-byte candidates. Structural source
+    and control-flow analysis are still required before patching a site.
+
+result:
+  direct_0x3000_candidates:
+    yellow-jp-0: 0
+    yellow-jp-1: 0
+    yellow-jp-2: 0
+    yellow-jp-3: 0
+    yellow-en: 0
+    yellow-fr: 0
+    yellow-de: 0
+    yellow-it: 0
+    yellow-es: 0
+  interpretation: >
+    None of the nine verified Yellow ROMs contains the direct EA 00 30 pattern
+    used for an MBC5 ROM-bank high-bit write. International Yellow ships on
+    MBC5 but the retail code still has no direct 9-bit ROM-bank path.
+
+structural_reference:
+  repository: pret/pokeyellow
+  commit: e89ead154b9968aa50eed9328ff2b38b6c194382
+  direct_rROMB_write_files:
+    - home/init.asm
+    - home/item.asm
+    - home/names.asm
+    - home/vblank.asm
+    - home/predef.asm
+    - home/bankswitch2.asm
+    - home/text.asm
+    - home/trainers.asm
+    - home/overworld.asm
+  explicit_rROMB0_writes: 0
+  explicit_rROMB1_writes: 0
+
+high_bank_safety_blockers:
+  - direct low-bank writes must not leave MBC5 ROMB1 set
+  - VBlank bank save/restore must preserve or clear bank bit 8
+  - high-bank calls/copies must restore the complete 9-bit bank before returning
+  - Japanese MBC3 builds need explicit mapper migration before bank 128+
+
+artifacts:
+  scanner: tools/audit_mapper_paths.py
+  counts: research/mapper-write-summary.csv
