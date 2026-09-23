@@ -1,23 +1,25 @@
-; YELLOW expansion WRAM overlay requirements.
+; YELLOW runtime extension state.
 ;
-; These variables are new expansion state; do not insert them into the middle
-; of the stock WRAM layout. Place them in a dedicated free/relocated expansion
-; WRAM section after the linker/layout audit.
+; Stock Yellow has 0 free WRAM0 and 0 free HRAM in the structural reference,
+; so expanded ID state is not allocated there. It lives in volatile SRAM bank
+; 15 while the expanded MBC5 runtime is active.
 
-SECTION "YELLOW ID16 Runtime State", WRAM0
+DEF YELLOW_RUNTIME_SRAM_BANK EQU 15
+DEF YELLOW_RUNTIME_BASE      EQU $A000
+DEF YELLOW_RUNTIME_MAGIC     EQU $A000
+DEF YELLOW_RUNTIME_VERSION   EQU $A004
 
-yellow_id16_var wYellowCurSpecies
-yellow_id16_var wYellowCurPartySpecies
-yellow_id16_var wYellowCurItem
-yellow_id16_var wYellowMoveNum
-yellow_id16_var wYellowPlayerSelectedMove
-yellow_id16_var wYellowEnemySelectedMove
-yellow_id16_var wYellowCapturedMonSpecies
-yellow_id16_var wYellowPlayerStarter
-yellow_id16_var wYellowRivalStarter
-yellow_id16_var wYellowFossilMon
+DEF wYellowCurSpecies         EQU $A006 ; 2 bytes
+DEF wYellowCurPartySpecies    EQU $A008 ; 2 bytes
+DEF wYellowCurItem            EQU $A00A ; 2 bytes
+DEF wYellowMoveNum            EQU $A00C ; 2 bytes
+DEF wYellowPlayerSelectedMove EQU $A00E ; 2 bytes
+DEF wYellowEnemySelectedMove  EQU $A010 ; 2 bytes
+DEF wYellowCapturedMonSpecies EQU $A012 ; 2 bytes
+DEF wYellowPlayerStarter      EQU $A014 ; 2 bytes
+DEF wYellowRivalStarter       EQU $A016 ; 2 bytes
+DEF wYellowFossilMon          EQU $A018 ; 2 bytes
+DEF wYellowEnemySpecies       EQU $A01A ; 2 bytes
+DEF wYellowTrainerClass       EQU $A01C ; 2 bytes
 
-; wEnemyMonOrTrainerClass mixes two namespaces in stock Yellow. The expanded
-; runtime must split them instead of merely widening that ambiguous byte.
-yellow_id16_var wYellowEnemySpecies
-yellow_id16_var wYellowTrainerClass
+DEF YELLOW_RUNTIME_STATE_END  EQU $A01E

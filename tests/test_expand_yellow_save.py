@@ -15,7 +15,7 @@ class ExpandYellowSaveTests(unittest.TestCase):
     def legacy_fixture(self):
         return bytes((i * 37 + 11) & 0xFF for i in range(mod.LEGACY_SIZE))
 
-    def test_expands_32k_to_128k(self):
+    def test_expands_32k_to_128k_with_runtime_bank(self):
         legacy = self.legacy_fixture()
         expanded, report = mod.expand_save(
             legacy, source_profile=mod.PROFILE_JP
@@ -23,7 +23,9 @@ class ExpandYellowSaveTests(unittest.TestCase):
         self.assertEqual(len(expanded), 128 * 1024)
         self.assertEqual(report["legacy_banks"], 4)
         self.assertEqual(report["expanded_banks"], 16)
-        self.assertEqual(report["extension_banks"], 12)
+        self.assertEqual(report["persistent_extension_banks"], 11)
+        self.assertEqual(report["runtime_banks"], 1)
+        self.assertEqual(report["runtime_bank"], 15)
 
     def test_first_four_sram_banks_are_byte_exact(self):
         legacy = self.legacy_fixture()
@@ -40,33 +42,34 @@ class ExpandYellowSaveTests(unittest.TestCase):
         )
         self.assertEqual(expanded[0x8000:0x8004], b"YLX1")
         parsed = mod.parse_header(expanded)
-        self.assertEqual(parsed["schema_version"], 1)
+        self.assertEqual(parsed["schema_version"], 2)
         self.assertEqual(parsed["source_profile"], "yellow-jp-legacy")
         self.assertEqual(
             parsed["source_sha256"], hashlib.sha256(legacy).hexdigest()
         )
 
-    def test_checksums_cover_extension_header_and_payload(self):
+    def test_persistent_checksum_stops_before_bank_15(self):
         legacy = self.legacy_fixture()
         expanded, _ = mod.expand_save(
             legacy, source_profile=mod.PROFILE_INTL
         )
-        parsed = mod.parse_header(expanded)
-        self.assertTrue(parsed["header_sum16_ok"])
-        self.assertTrue(parsed["payload_sum16_ok"])
+        damaged_persistent = bytearray(expanded)
+        damaged_persistent[mod.PERSISTENT_END - 1] ^= 1
+        self.assertFalse(mod.parse_header(bytes(damaged_persistent))["payload_sum16_ok"])
 
-        damaged = bytearray(expanded)
-        damaged[-1] ^= 1
-        parsed = mod.parse_header(bytes(damaged))
-        self.assertFalse(parsed["payload_sum16_ok"])
+        damaged_runtime = bytearray(expanded)
+        damaged_runtime[-1] ^= 1
+        self.assertTrue(mod.parse_header(bytes(damaged_runtime))["payload_sum16_ok"])
 
-    def test_payload_is_ff_initialized(self):
+    def test_persistent_and_runtime_regions_are_ff_initialized(self):
         legacy = self.legacy_fixture()
         expanded, _ = mod.expand_save(
             legacy, source_profile=mod.PROFILE_JP
         )
-        payload = expanded[mod.EXT_OFFSET + mod.HEADER_SIZE:]
+        payload = expanded[mod.PERSISTENT_OFFSET + mod.HEADER_SIZE:mod.PERSISTENT_END]
+        runtime = expanded[mod.RUNTIME_OFFSET:]
         self.assertEqual(set(payload), {0xFF})
+        self.assertEqual(set(runtime), {0xFF})
 
     def test_rejects_non_32k_legacy_save(self):
         with self.assertRaises(ValueError):

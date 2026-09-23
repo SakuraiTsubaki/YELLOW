@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """Create YELLOW's 128 KiB expanded SRAM image without rewriting legacy bytes.
 
-Banks 0..3 (first 32 KiB) are preserved byte-for-byte.
-Banks 4..15 form a versioned 96 KiB extension region.
-
-This tool deliberately does not interpret or "repair" the Japanese or
-international legacy save. It only wraps verified/raw legacy bytes so the
-runtime can migrate subsystems incrementally without destroying source data.
+Banks 0..3 (32 KiB) are the byte-exact legacy Yellow save.
+Banks 4..14 (88 KiB) are persistent YELLOW extension storage.
+Bank 15 (8 KiB) is reserved as volatile runtime-extension RAM; it is excluded
+from persistent payload checksums and is reinitialized by the runtime.
 """
 from __future__ import annotations
 
@@ -16,14 +14,18 @@ import json
 import struct
 from pathlib import Path
 
+SRAM_BANK_SIZE = 0x2000
 LEGACY_SIZE = 0x8000
 EXPANDED_SIZE = 0x20000
-SRAM_BANK_SIZE = 0x2000
-EXT_OFFSET = LEGACY_SIZE
-EXT_SIZE = EXPANDED_SIZE - LEGACY_SIZE
+PERSISTENT_OFFSET = LEGACY_SIZE
+RUNTIME_BANK = 15
+RUNTIME_OFFSET = RUNTIME_BANK * SRAM_BANK_SIZE
+PERSISTENT_END = RUNTIME_OFFSET
+PERSISTENT_SIZE = PERSISTENT_END - PERSISTENT_OFFSET
+RUNTIME_SIZE = EXPANDED_SIZE - RUNTIME_OFFSET
 HEADER_SIZE = 0x40
 MAGIC = b"YLX1"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 PROFILE_UNKNOWN = 0
 PROFILE_JP = 1
@@ -35,18 +37,6 @@ PROFILE_NAMES = {
     PROFILE_INTL: "yellow-intl-legacy",
 }
 
-# Header layout, all integers little-endian:
-# 00  magic[4]             YLX1
-# 04  schema_version u16
-# 06  header_size u16
-# 08  source_profile u8
-# 09  flags u8
-# 0A  reserved u16
-# 0C  extension_bytes u32  bytes after this header
-# 10  source_sha256[32]
-# 30  payload_sum16 u16    additive checksum over extension payload
-# 32  header_sum16 u16     additive checksum over header with this field zero
-# 34  reserved[12]
 HEADER_STRUCT = struct.Struct("<4sHHBBHI32sHH12s")
 assert HEADER_STRUCT.size == HEADER_SIZE
 
@@ -72,8 +62,8 @@ def build_header(
         raise ValueError("invalid source profile")
     if len(source_sha256) != 32:
         raise ValueError("source_sha256 must be 32 raw bytes")
-    if len(payload) != EXT_SIZE - HEADER_SIZE:
-        raise ValueError("invalid extension payload length")
+    if len(payload) != PERSISTENT_SIZE - HEADER_SIZE:
+        raise ValueError("invalid persistent extension payload length")
 
     payload_sum = sum16(payload)
     raw = HEADER_STRUCT.pack(
@@ -106,15 +96,15 @@ def build_header(
 
 
 def parse_header(data: bytes) -> dict:
-    if len(data) < EXT_OFFSET + HEADER_SIZE:
-        raise ValueError("expanded save is too small")
-    fields = HEADER_STRUCT.unpack(data[EXT_OFFSET:EXT_OFFSET + HEADER_SIZE])
+    if len(data) != EXPANDED_SIZE:
+        raise ValueError("expanded save must be exactly 128 KiB")
+    fields = HEADER_STRUCT.unpack(data[PERSISTENT_OFFSET:PERSISTENT_OFFSET + HEADER_SIZE])
     (
         magic, schema, header_size, profile, flags, reserved,
         payload_bytes, source_sha, payload_sum, header_sum, reserved_tail,
     ) = fields
-    header = data[EXT_OFFSET:EXT_OFFSET + HEADER_SIZE]
-    payload = data[EXT_OFFSET + HEADER_SIZE:]
+    header = data[PERSISTENT_OFFSET:PERSISTENT_OFFSET + HEADER_SIZE]
+    payload = data[PERSISTENT_OFFSET + HEADER_SIZE:PERSISTENT_END]
     return {
         "magic": magic.decode("ascii", errors="replace"),
         "schema_version": schema,
@@ -124,12 +114,14 @@ def parse_header(data: bytes) -> dict:
         "flags": flags,
         "reserved": reserved,
         "payload_bytes": payload_bytes,
+        "payload_bytes_ok": payload_bytes == len(payload),
         "source_sha256": source_sha.hex(),
         "payload_sum16": payload_sum,
         "payload_sum16_ok": sum16(payload) == payload_sum,
         "header_sum16": header_sum,
         "header_sum16_ok": _header_sum(header) == header_sum,
         "reserved_tail_zero": reserved_tail == b"\x00" * 12,
+        "runtime_bank_excluded_from_payload": True,
     }
 
 
@@ -147,13 +139,14 @@ def expand_save(
         raise ValueError("fill must fit in one byte")
 
     source_sha = hashlib.sha256(legacy).digest()
-    payload = bytes([fill]) * (EXT_SIZE - HEADER_SIZE)
+    payload = bytes([fill]) * (PERSISTENT_SIZE - HEADER_SIZE)
+    runtime = bytes([fill]) * RUNTIME_SIZE
     header = build_header(
         source_profile=source_profile,
         source_sha256=source_sha,
         payload=payload,
     )
-    expanded = legacy + header + payload
+    expanded = legacy + header + payload + runtime
     assert len(expanded) == EXPANDED_SIZE
 
     report = parse_header(expanded)
@@ -162,9 +155,12 @@ def expand_save(
         "expanded_bytes": EXPANDED_SIZE,
         "legacy_banks": LEGACY_SIZE // SRAM_BANK_SIZE,
         "expanded_banks": EXPANDED_SIZE // SRAM_BANK_SIZE,
-        "extension_banks": EXT_SIZE // SRAM_BANK_SIZE,
+        "persistent_extension_banks": PERSISTENT_SIZE // SRAM_BANK_SIZE,
+        "runtime_banks": RUNTIME_SIZE // SRAM_BANK_SIZE,
+        "runtime_bank": RUNTIME_BANK,
         "legacy_prefix_preserved": expanded[:LEGACY_SIZE] == legacy,
-        "extension_offset": EXT_OFFSET,
+        "persistent_extension_offset": PERSISTENT_OFFSET,
+        "runtime_offset": RUNTIME_OFFSET,
     })
     return expanded, report
 

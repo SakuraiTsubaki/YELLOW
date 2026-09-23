@@ -1,39 +1,23 @@
 # YELLOW expanded SRAM
 
-YELLOW's 10세대 대비 save expansion keeps the original 32 KiB Yellow SRAM intact and appends a versioned extension instead of rewriting the legacy save in place.
+The expanded MBC5 profile uses the full 128 KiB SRAM address space without forcing new runtime state into Yellow's already-full WRAM0/HRAM.
 
-## Physical layout
-
-MBC5 can address 16 external-RAM banks of 8 KiB each. The expanded profile therefore uses 128 KiB total SRAM.
-
-| SRAM banks | Bytes | Role |
+| SRAM banks | Size | Role |
 |---|---:|---|
-| 0..3 | 32 KiB | original JP or international Yellow save, byte-exact |
-| 4..15 | 96 KiB | YELLOW extension region |
+| 0..3 | 32 KiB | byte-exact legacy JP/international save |
+| 4..14 | 88 KiB | persistent YELLOW extension |
+| 15 | 8 KiB | volatile runtime extension/service RAM |
 
-The first extension byte is offset `0x8000`, which is bank 4.
+Bank 4 starts with the versioned `YLX1` header. Schema v2 stops the persistent payload checksum at file offset `0x1E000`, the start of bank 15.
 
-## Why the legacy prefix stays untouched
+## Why bank 15 is volatile
 
-Japanese and international Yellow have incompatible save structures. Keeping banks 0..3 byte-exact means:
+The structural Yellow reference has no free WRAM0 or HRAM, and the verified source ROMs do not share a safe ROM0 cavity. MBC5 nevertheless exposes sixteen external-RAM banks. YELLOW therefore reserves the final bank as runtime memory.
 
-- each source-family decoder can keep using its proven legacy layout;
-- migration can be retried from source bytes;
-- unknown or not-yet-decoded legacy fields are not destroyed;
-- expanded data can be added subsystem-by-subsystem.
+The runtime can copy a small service image from new ROM bank `0x40` into SRAM bank 15 and execute it from the mapped `$A000-$BFFF` cartridge-RAM window. That service can change ROMB0/ROMB1 while its own instructions remain available, then restore the legacy low ROM bank before returning.
 
-## Extension header v1
+Persistent save data never depends on the contents of bank 15. It is reinitialized by the expanded runtime.
 
-Bank 4 begins with a 64-byte header tagged `YLX1`. It records schema version, source legacy profile, source-save SHA-256, payload length and checksums.
+## Persistent compatibility
 
-The remaining bytes of banks 4..15 are initially `0xFF` and become a directory-backed extension area in later stages.
-
-## Runtime boundary
-
-The file-format/tooling layer is implemented now. Runtime activation remains gated on three engine changes:
-
-1. migrate the JP runtime from MBC3 to the common MBC5 expansion profile;
-2. add 4-bit MBC5 SRAM-bank switching and preserve/restore the active SRAM bank;
-3. patch save/load/checksum paths so banks 4..15 are recognized.
-
-Until those are integrated, the ROM header RAM-size code remains the legacy 32 KiB value.
+The first 32 KiB remains byte-exact, so the JP 8x30 and international 12x20 legacy layouts stay independently decodable. Persistent extension records, including the 247-slot Pokémon sidecar, remain in bank 4 and are unaffected by reserving bank 15.
