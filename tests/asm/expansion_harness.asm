@@ -5,11 +5,6 @@ DEF rROMB1 EQU $3000
 
 SECTION "Harness HRAM", HRAM
 hLoadedROMBank:: db
-hLoadedROMBankHigh:: db
-
-SECTION "Harness Home", ROM0
-JumpToAddress::
-    jp hl
 
 INCLUDE "asm/expansion/id16.inc"
 INCLUDE "asm/expansion/farptr9.inc"
@@ -20,35 +15,38 @@ INCLUDE "asm/expansion/move16.asm"
 INCLUDE "asm/expansion/item16.asm"
 INCLUDE "asm/expansion/wram_id16.asm"
 
-SECTION "Harness Low Target", ROMX[$4000], BANK[$01]
-HarnessLowTarget::
-    ret
+SECTION "Harness WRAM", WRAM0
+wHarnessBuffer:: ds 16
 
-SECTION "Harness High Target", ROMX[$4000], BANK[$100]
-HarnessHighTarget::
-    ret
+SECTION "Harness Low Data", ROMX[$4000], BANK[$01]
+HarnessLowData::
+    db $11, $12, $13, $14
 
-SECTION "Harness Top Target", ROMX[$7fff], BANK[$1ff]
-HarnessTopTarget::
-    db 0
+SECTION "Harness High Data", ROMX[$4000], BANK[$100]
+HarnessHighData::
+    db $21, $22, $23, $24
+
+SECTION "Harness Top Data", ROMX[$7ffc], BANK[$1ff]
+HarnessTopData::
+    db $31, $32, $33, $34
 
 SECTION "Harness Species Index", ROMX[$5000], BANK[$02]
 YellowSpeciesIndex16::
-    yellow_farptr9 HarnessLowTarget
-    yellow_farptr9 HarnessHighTarget
-    yellow_farptr9 HarnessTopTarget
+    yellow_farptr9 HarnessLowData
+    yellow_farptr9 HarnessHighData
+    yellow_farptr9 HarnessTopData
 YellowSpeciesIndex16End::
 
 SECTION "Harness Move Index", ROMX[$5100], BANK[$02]
 YellowMoveIndex16::
-    yellow_farptr9 HarnessHighTarget
-    yellow_farptr9 HarnessLowTarget
+    yellow_farptr9 HarnessHighData
+    yellow_farptr9 HarnessLowData
 YellowMoveIndex16End::
 
 SECTION "Harness Item Index", ROMX[$5200], BANK[$02]
 YellowItemIndex16::
-    yellow_farptr9 HarnessTopTarget
-    yellow_farptr9 HarnessLowTarget
+    yellow_farptr9 HarnessTopData
+    yellow_farptr9 HarnessLowData
 YellowItemIndex16End::
 
 SECTION "Harness Descriptors", ROM0
@@ -66,39 +64,45 @@ ASSERT YellowItemIndex16End - YellowItemIndex16 == 6
 ASSERT HarnessDescriptorsEnd - YellowSpeciesTableDescriptor == 18
 
 SECTION "Harness Calls", ROM0
-HarnessCallHigh::
-    yellow_farcall9 HarnessHighTarget
+HarnessCopyHighData::
+    ld bc, BANK(HarnessHighData)
+    ld de, HarnessHighData
+    ld hl, wHarnessBuffer
+    ld a, 4
+    di
+    call YellowCopyFromBank9Locked
+    ei
     ret
 
 HarnessResolveSpecies2::
-    call YellowGetLoadedROMBank9
-    push bc
     ld bc, 2
     call YellowResolveSpeciesRecord16
-    jr c, .restore
-    call YellowSetROMBank9
-.restore
-    pop bc
-    jp YellowSetROMBank9
+    ret c
+    ld hl, wHarnessBuffer
+    ld a, 4
+    di
+    call YellowCopyFromBank9Locked
+    ei
+    ret
 
 HarnessResolveMove1::
-    call YellowGetLoadedROMBank9
-    push bc
     ld bc, 1
     call YellowResolveMoveRecord16
-    jr c, .restore
-    call YellowSetROMBank9
-.restore
-    pop bc
-    jp YellowSetROMBank9
+    ret c
+    ld hl, wHarnessBuffer
+    ld a, 4
+    di
+    call YellowCopyFromBank9Locked
+    ei
+    ret
 
 HarnessResolveItem0::
-    call YellowGetLoadedROMBank9
-    push bc
     ld bc, 0
     call YellowResolveItemRecord16
-    jr c, .restore
-    call YellowSetROMBank9
-.restore
-    pop bc
-    jp YellowSetROMBank9
+    ret c
+    ld hl, wHarnessBuffer
+    ld a, 4
+    di
+    call YellowCopyFromBank9Locked
+    ei
+    ret
