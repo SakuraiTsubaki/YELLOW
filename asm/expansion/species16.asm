@@ -1,8 +1,6 @@
-; YELLOW 16-bit species table resolver.
-;
-; Generated content provides YellowSpeciesTableDescriptor in ROM0.
-; The descriptor points to a 3-byte farptr9 index whose array position is the
-; 16-bit logical species ID.
+; YELLOW 16-bit species table resolver and core-record loader.
+
+INCLUDE "asm/expansion/species_core.inc"
 
 YellowResolveSpeciesRecord16::
 ; Input: BC = logical species ID
@@ -10,3 +8,21 @@ YellowResolveSpeciesRecord16::
 ; Carry set if no species record exists.
     ld hl, YellowSpeciesTableDescriptor
     jp YellowResolveTable16
+
+YellowCopySpeciesCore16Locked::
+; Input:
+;   BC = logical species ID
+;   HL = WRAM destination (at least YELLOW_SPECIES_CORE_V1_SIZE bytes)
+; Output:
+;   Carry set if species ID is invalid/missing.
+;
+; PRECONDITION: interrupts disabled.
+; POSTCONDITION on success: source bank restored, ROMB1 zero.
+    push hl
+    call YellowResolveSpeciesRecord16
+    pop hl
+    ret c
+    ld a, YELLOW_SPECIES_CORE_V1_SIZE
+    call YellowCopyFromBank9Locked
+    and a
+    ret

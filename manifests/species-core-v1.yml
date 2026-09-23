@@ -1,0 +1,47 @@
+schema_version: 1
+project: YELLOW
+status: species_core_v1_defined
+
+record:
+  bytes: 20
+  byte_order: little
+  fields:
+    - {offset: 0, size: 1, name: hp}
+    - {offset: 1, size: 1, name: attack}
+    - {offset: 2, size: 1, name: defense}
+    - {offset: 3, size: 1, name: speed}
+    - {offset: 4, size: 1, name: special_attack}
+    - {offset: 5, size: 1, name: special_defense}
+    - {offset: 6, size: 1, name: legacy_special}
+    - {offset: 7, size: 1, name: catch_rate}
+    - {offset: 8, size: 2, name: type1}
+    - {offset: 10, size: 2, name: type2}
+    - {offset: 12, size: 2, name: base_exp}
+    - {offset: 14, size: 1, name: growth_rate}
+    - {offset: 15, size: 1, name: gender_ratio}
+    - {offset: 16, size: 1, name: base_friendship}
+    - {offset: 17, size: 1, name: egg_cycles}
+    - {offset: 18, size: 1, name: flags}
+    - {offset: 19, size: 1, name: reserved}
+
+design:
+  logical_species_id_bits: 16
+  type_id_bits: 16
+  base_exp_bits: 16
+  split_special_stats: true
+  legacy_special_retained: true
+  separate_tables:
+    - sprites
+    - cries
+    - learnsets
+    - evolutions
+    - abilities
+    - forms
+    - tmhm_compatibility
+
+runtime:
+  resolver: YellowResolveSpeciesRecord16
+  loader: YellowCopySpeciesCore16Locked
+  upper_bank_policy: copy_to_wram_before_use
+  interrupt_precondition: disabled
+  legacy_species_below_256_can_coexist: true
