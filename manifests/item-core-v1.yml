@@ -1,16 +1,30 @@
 schema_version: 1
 project: YELLOW
-record_bytes: 16
-logical_id_bits: 16
-fields:
-  price: 32
-  pocket: 8
-  importance: 8
-  hold_effect: 16
-  parameter: 16
-  fling_power: 8
-  battle_usage: 8
-  field_use: 16
-  flags: 16
-loader: YellowCopyItemCore16Locked
-upper_bank_policy: copy_to_wram
+status: item_core_v1_defined
+record:
+  bytes: 24
+  byte_order: little
+  fields:
+    - {offset: 0, size: 4, name: price}
+    - {offset: 4, size: 1, name: pocket}
+    - {offset: 5, size: 1, name: category}
+    - {offset: 6, size: 1, name: battle_use}
+    - {offset: 7, size: 1, name: field_use}
+    - {offset: 8, size: 2, name: held_effect}
+    - {offset: 10, size: 2, name: effect}
+    - {offset: 12, size: 2, name: parameter}
+    - {offset: 14, size: 2, name: fling_power}
+    - {offset: 16, size: 4, name: flags}
+    - {offset: 20, size: 2, name: effect_script}
+    - {offset: 22, size: 2, name: reserved}
+design:
+  logical_item_id_bits: 16
+  effect_id_bits: 16
+  held_effect_id_bits: 16
+  price_bits: 32
+  flags_bits: 32
+  future_counts_are_not_guessed: true
+runtime:
+  resolver: YellowResolveItemRecord16
+  loader: YellowCopyItemCore16Locked
+  upper_bank_policy: copy_to_wram_before_use

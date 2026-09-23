@@ -1,4 +1,4 @@
-; YELLOW 16-bit item table resolver and core loader.
+; YELLOW 16-bit item table resolver and core-record loader.
 
 INCLUDE "asm/expansion/item_core.inc"
 
@@ -10,7 +10,8 @@ YellowResolveItemRecord16::
     jp YellowResolveTable16
 
 YellowCopyItemCore16Locked::
-; Input: BC = logical item ID, HL = WRAM destination.
+; Input BC = logical item ID
+;       HL = WRAM destination
 ; PRECONDITION: interrupts disabled.
     push hl
     call YellowResolveItemRecord16

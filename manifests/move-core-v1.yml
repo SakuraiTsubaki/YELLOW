@@ -1,17 +1,33 @@
 schema_version: 1
 project: YELLOW
-record_bytes: 16
-logical_id_bits: 16
-fields:
-  type: 16
-  effect: 16
-  power: 8
-  accuracy: 8
-  pp: 8
-  priority: signed_8
-  category: 8
-  target: 8
-  effect_chance: 8
-  flags: 32
-loader: YellowCopyMoveCore16Locked
-upper_bank_policy: copy_to_wram
+status: move_core_v1_defined
+record:
+  bytes: 24
+  byte_order: little
+  fields:
+    - {offset: 0, size: 2, name: type}
+    - {offset: 2, size: 2, name: power}
+    - {offset: 4, size: 2, name: accuracy}
+    - {offset: 6, size: 1, name: pp}
+    - {offset: 7, size: 1, name: priority}
+    - {offset: 8, size: 1, name: category}
+    - {offset: 9, size: 1, name: target}
+    - {offset: 10, size: 2, name: effect}
+    - {offset: 12, size: 1, name: effect_chance}
+    - {offset: 13, size: 1, name: generation}
+    - {offset: 14, size: 4, name: flags}
+    - {offset: 18, size: 2, name: animation}
+    - {offset: 20, size: 2, name: effect_script}
+    - {offset: 22, size: 2, name: reserved}
+design:
+  logical_move_id_bits: 16
+  type_id_bits: 16
+  effect_id_bits: 16
+  power_bits: 16
+  accuracy_bits: 16
+  flags_bits: 32
+  future_counts_are_not_guessed: true
+runtime:
+  resolver: YellowResolveMoveRecord16
+  loader: YellowCopyMoveCore16Locked
+  upper_bank_policy: copy_to_wram_before_use

@@ -1,4 +1,4 @@
-; YELLOW 16-bit move table resolver and core loader.
+; YELLOW 16-bit move table resolver and core-record loader.
 
 INCLUDE "asm/expansion/move_core.inc"
 
@@ -10,7 +10,8 @@ YellowResolveMoveRecord16::
     jp YellowResolveTable16
 
 YellowCopyMoveCore16Locked::
-; Input: BC = logical move ID, HL = WRAM destination.
+; Input BC = logical move ID
+;       HL = WRAM destination
 ; PRECONDITION: interrupts disabled.
     push hl
     call YellowResolveMoveRecord16
