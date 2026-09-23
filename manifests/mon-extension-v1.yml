@@ -1,0 +1,69 @@
+schema_version: 1
+project: YELLOW
+status: persistent_layout_defined
+
+canonical_slots:
+  party:
+    start: 0
+    count: 6
+  daycare:
+    start: 6
+    count: 1
+  pc:
+    start: 7
+    count: 240
+    note: >
+      The legacy JP layout is 8x30 and international is 12x20, but both contain
+      exactly 240 PC slots. Runtime migration maps either physical layout into
+      this linear canonical slot range.
+  total: 247
+
+record:
+  bytes: 16
+  table_bytes: 3952
+  save_file_offset: 0x08040
+  sram_bank: 4
+  bank_local_offset: 0x0040
+  end_file_offset_exclusive: 0x08FB0
+  fields:
+    - {offset: 0x00, size: 1, name: species_high}
+    - {offset: 0x01, size: 4, name: move_high, count: 4}
+    - {offset: 0x05, size: 2, name: held_item}
+    - {offset: 0x07, size: 2, name: ability}
+    - {offset: 0x09, size: 2, name: form}
+    - {offset: 0x0B, size: 1, name: nature}
+    - {offset: 0x0C, size: 1, name: flags}
+    - {offset: 0x0D, size: 3, name: reserved}
+  defaults:
+    species_high: 0
+    move_high: [0, 0, 0, 0]
+    held_item: 0
+    ability: 0
+    form: 0
+    nature: 0
+    flags: 0
+    reserved: [0, 0, 0]
+
+logical_reconstruction:
+  species: legacy_species_low | (species_high << 8)
+  moves: legacy_move_low[i] | (move_high[i] << 8)
+  held_item: sidecar_16bit
+  ability: sidecar_16bit
+  form: sidecar_16bit
+
+flags:
+  bit0: nature_valid
+  bit1: held_item_valid
+  bit2: ability_valid
+  bit3: form_valid
+  bit4: reserved
+  bit5: reserved
+  bit6: reserved
+  bit7: reserved
+
+runtime_rules:
+  - moving/copying/releasing a Pokemon must move/clear its extension record atomically
+  - party-to-PC and PC-to-party operations must preserve the extension record
+  - JP 8x30 and international 12x20 PC layouts map to the same canonical 240-slot range
+  - battle structs are transient and require a separate WRAM 16-bit-ID migration
+  - link/trade formats require explicit version negotiation before extended IDs can be exchanged
