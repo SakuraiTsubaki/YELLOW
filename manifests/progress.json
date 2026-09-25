@@ -8,9 +8,9 @@
     "commit": "e89ead154b9968aa50eed9328ff2b38b6c194382"
   },
   "last_verified_work": {
-    "commit": "7cb76556d942f272268f42201e27cd9982978546",
-    "message": "Preserve low species byte in sidecar bridge",
-    "github_actions_run": 36095086372,
+    "commit": "e1e521ea49a47bdc5be0516937ce70871608d9be",
+    "message": "Prefetch 16-bit species core during LoadMonData bridge",
+    "github_actions_run": 36095622858,
     "conclusion": "success"
   },
   "completed": [
@@ -27,7 +27,11 @@
     "Integrated overlay builds a verified 2 MiB MBC5 Yellow image with 128 KiB SRAM header",
     "Initialized volatile YRT1 16-bit runtime state at boot",
     "Implemented ROM-resident persistent-sidecar byte reader and species low+high composer",
-    "Latest full unit/RGBDS/reference/integration CI passes"
+    "Latest full unit/RGBDS/reference/integration CI passes",
+    "Integrated LoadMonData_ persistent species bridge into the structural Yellow build",
+    "Mirrors party/PC/daycare species low+sidecar-high into 16-bit YRT1 runtime state",
+    "Reserved SRAM-bank-15 species/move/item core scratch buffers below the service window",
+    "Prefetches the current 16-bit species core into runtime scratch when a descriptor/record exists"
   ],
   "current_architecture": {
     "expansion_rom_service_bank": "0x40",
@@ -42,14 +46,13 @@
     "species_move_item_logical_id_bits": 16
   },
   "resume_from": {
-    "stage": "first real stock-runtime species bridge",
-    "next_task": "Patch the structural Yellow LoadMonData_ path so player-party/PC/daycare legacy low-byte species is combined with the persistent sidecar high byte, mirrored into YRT1 16-bit runtime state, and then consumed by a high-ID-aware species-core path without changing legacy-ID behavior.",
+    "stage": "persistent move-ID runtime bridge",
+    "next_task": "After LoadMonData_ copies the legacy mon into wLoadedMon, combine its four one-byte move IDs with sidecar move-high bytes and mirror four 16-bit logical moves into SRAM-bank-15 runtime state. Then widen selected-move consumption one path at a time.",
     "constraints": [
-      "Do not enable IDs above 255 until every consumer in that path is widened or guarded",
-      "Enemy/trainer species need a separate transient high-byte source, not persistent PC sidecar",
-      "Do not switch SRAM away from bank 15 while executing SRAM-resident service code",
-      "ROM-resident bank $40 bridge performs persistent SRAM bank 4 access",
-      "Keep JP and international physical save layouts separate while mapping both to canonical persistent slots",
+      "Do not enable IDs above 255 in battle until move selectors and effect lookup consumers are widened",
+      "Keep legacy one-byte move fields byte-exact",
+      "Use ROM bank $40 for persistent SRAM-bank-4 sidecar reads",
+      "Use SRAM bank 15 only for volatile runtime state/service/scratch",
       "No ROM or SAV binaries committed to GitHub"
     ]
   }
