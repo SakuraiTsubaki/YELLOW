@@ -35,6 +35,20 @@ class RuntimeOverlayTests(unittest.TestCase):
             self.assertLess(text.index("ROMX $40"), text.index("WRAM0"))
             self.assertIn("ROMX $7F", text)
 
+    def test_load_mon_data_patch_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = pathlib.Path(td) / "load_mon_data.asm"
+            path.write_text(
+                "x\n" + mod.LOAD_MON_DATA_OLD + "y\n",
+                encoding="utf-8",
+            )
+            mod.patch_load_mon_data(path)
+            once = path.read_text(encoding="utf-8")
+            mod.patch_load_mon_data(path)
+            twice = path.read_text(encoding="utf-8")
+            self.assertEqual(once, twice)
+            self.assertIn("YellowSyncLoadedPersistentSpecies16", twice)
+
     def test_makefile_promotes_ram_header_to_128k(self):
         with tempfile.TemporaryDirectory() as td:
             path = pathlib.Path(td) / "Makefile"
