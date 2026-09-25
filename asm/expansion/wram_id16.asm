@@ -22,8 +22,10 @@ DEF wYellowRivalStarter       EQU $A016 ; 2 bytes
 DEF wYellowFossilMon          EQU $A018 ; 2 bytes
 DEF wYellowEnemySpecies       EQU $A01A ; 2 bytes
 DEF wYellowTrainerClass       EQU $A01C ; 2 bytes
+DEF wYellowSpeciesCoreStatus   EQU $A01E ; 0 missing/not loaded, 1 ready
+DEF wYellowRuntimeFlags        EQU $A01F
 
-DEF YELLOW_RUNTIME_STATE_END  EQU $A01E
+DEF YELLOW_RUNTIME_STATE_END  EQU $A020
 DEF YELLOW_RUNTIME_STATE_SIZE EQU YELLOW_RUNTIME_STATE_END - YELLOW_RUNTIME_BASE
 
 ; Core-record scratch buffers. These live below the $BC00 service image and

@@ -99,6 +99,10 @@ YellowSyncLoadedPersistentSpecies16::
     ld [wYellowCurPartySpecies + 1], a
     ld [wYellowCurSpecies + 1], a
 
+    ; The service is executable now because SRAM bank 15 is selected.
+    ; Missing descriptors/records are allowed here; status remains 0.
+    call YellowPrefetchCurrentSpeciesCore16Locked
+
     xor a
     ld [rRAMG], a
 

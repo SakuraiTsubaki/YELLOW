@@ -38,9 +38,18 @@ YellowPrefetchCurrentSpeciesCore16Locked::
 ; OUTPUT:
 ;   Carry clear: wYellowSpeciesCoreScratch contains species core v1
 ;   Carry set: no descriptor/record exists for the logical ID
+    xor a
+    ld [wYellowSpeciesCoreStatus], a
+
     ld a, [wYellowCurSpecies]
     ld c, a
     ld a, [wYellowCurSpecies + 1]
     ld b, a
     ld hl, wYellowSpeciesCoreScratch
-    jp YellowCopySpeciesCore16Locked
+    call YellowCopySpeciesCore16Locked
+    ret c
+
+    ld a, 1
+    ld [wYellowSpeciesCoreStatus], a
+    and a
+    ret
