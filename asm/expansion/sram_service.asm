@@ -16,6 +16,18 @@ INCLUDE "asm/expansion/species16.asm"
 INCLUDE "asm/expansion/move16.asm"
 INCLUDE "asm/expansion/item16.asm"
 
+; Default descriptors live with the SRAM service so stock Yellow ROM0 does not
+; need to surrender any space. Real generated tables may define
+; YELLOW_EXTERNAL_TABLE_DESCRIPTORS and provide replacement descriptors.
+IF !DEF(YELLOW_EXTERNAL_TABLE_DESCRIPTORS)
+YellowSpeciesTableDescriptor::
+    dw 0, 0, 0
+YellowMoveTableDescriptor::
+    dw 0, 0, 0
+YellowItemTableDescriptor::
+    dw 0, 0, 0
+ENDC
+
 ENDL
 YellowSRAMServiceImageEnd::
 

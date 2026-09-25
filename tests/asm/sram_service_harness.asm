@@ -11,6 +11,8 @@ hLoadedROMBank:: db
 SECTION "SRAM Service Harness WRAM", WRAM0
 wHarnessBuffer:: ds 32
 
+DEF YELLOW_EXTERNAL_TABLE_DESCRIPTORS
+
 SECTION "SRAM Service Harness Descriptors", ROM0
 YellowSpeciesTableDescriptor::
     dw 1
