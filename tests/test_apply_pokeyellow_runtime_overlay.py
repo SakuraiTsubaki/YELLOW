@@ -39,7 +39,11 @@ class RuntimeOverlayTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             path = pathlib.Path(td) / "load_mon_data.asm"
             path.write_text(
-                "x\n" + mod.LOAD_MON_DATA_OLD + "y\n",
+                "x\n"
+                + mod.LOAD_MON_DATA_OLD
+                + "middle\n"
+                + mod.COPY_MON_DATA_OLD
+                + "y\n",
                 encoding="utf-8",
             )
             mod.patch_load_mon_data(path)
@@ -48,6 +52,7 @@ class RuntimeOverlayTests(unittest.TestCase):
             twice = path.read_text(encoding="utf-8")
             self.assertEqual(once, twice)
             self.assertIn("YellowSyncLoadedPersistentSpecies16", twice)
+            self.assertIn("YellowSyncLoadedPersistentMoves16", twice)
 
     def test_makefile_promotes_ram_header_to_128k(self):
         with tempfile.TemporaryDirectory() as td:
