@@ -60,16 +60,41 @@ YellowReadMonExtByteLocked::
     ld b, 0
     add hl, bc
 
+    push hl
     ld a, $0a
     ld [rRAMG], a
     ld a, YELLOW_MON_EXT_SRAM_BANK
     ld [rRAMB], a
-    ld b, [hl]
 
+    ; A raw/legacy 32 KiB save has no valid bank-4 extension. Treat missing
+    ; YLX1 as high byte zero instead of consuming uninitialized 0xFF data.
+    ld hl, $A000
+    ld a, [hli]
+    cp $59 ; Y
+    jr nz, .no_extension
+    ld a, [hli]
+    cp $4c ; L
+    jr nz, .no_extension
+    ld a, [hli]
+    cp $58 ; X
+    jr nz, .no_extension
+    ld a, [hl]
+    cp $31 ; 1
+    jr nz, .no_extension
+
+    pop hl
+    ld b, [hl]
     xor a
     ld [rRAMG], a
     ld a, b
     and a
+    ret
+
+.no_extension
+    pop hl
+    xor a
+    ld [rRAMG], a
+    xor a
     ret
 .invalid
     scf

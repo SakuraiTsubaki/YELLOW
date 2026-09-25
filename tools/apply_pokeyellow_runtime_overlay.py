@@ -20,6 +20,7 @@ SERVICE_BLOCK = """
 ; YELLOW EXPANSION OVERLAY BEGIN
 SECTION "YELLOW Expansion Service ROM", ROMX[$4000], BANK[$40]
 INCLUDE "asm/expansion/sram_service.asm"
+INCLUDE "asm/expansion/pokeyellow_bridge.asm"
 
 SECTION "YELLOW Expansion ROM Anchor", ROMX[$7fff], BANK[$7f]
     db $ff
@@ -56,6 +57,7 @@ EXPANSION_FILES = (
     "item_core.inc",
     "mbc5_bank9.asm",
     "mon_sidecar_runtime.asm",
+    "pokeyellow_bridge.asm",
     "move16.asm",
     "move_core.inc",
     "species16.asm",
@@ -99,6 +101,17 @@ def patch_init(path: Path) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def patch_load_mon_data(path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    text = replace_once(
+        text,
+        LOAD_MON_DATA_OLD,
+        LOAD_MON_DATA_NEW,
+        "engine/pokemon/load_mon_data.asm",
+    )
+    path.write_text(text, encoding="utf-8")
+
+
 def patch_makefile(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
     expanded = 'RGBFIXFLAGS += -cjsv -k 01 -l 0x33 -m MBC5+RAM+BATTERY -r 04 -t "POKEMON YELLOW"'
@@ -122,7 +135,13 @@ def copy_expansion(repo_root: Path, target_root: Path) -> None:
 
 
 def apply(repo_root: Path, target_root: Path) -> None:
-    for rel in ("main.asm", "layout.link", "home/init.asm", "Makefile"):
+    for rel in (
+        "main.asm",
+        "layout.link",
+        "home/init.asm",
+        "engine/pokemon/load_mon_data.asm",
+        "Makefile",
+    ):
         if not (target_root / rel).is_file():
             raise RuntimeError(f"not a pokeyellow checkout: missing {rel}")
 
@@ -130,6 +149,7 @@ def apply(repo_root: Path, target_root: Path) -> None:
     patch_main(target_root / "main.asm")
     patch_layout(target_root / "layout.link")
     patch_init(target_root / "home" / "init.asm")
+    patch_load_mon_data(target_root / "engine" / "pokemon" / "load_mon_data.asm")
     patch_makefile(target_root / "Makefile")
 
 
