@@ -49,6 +49,16 @@ INIT_NEW = """	call ClearSprites
 	ld a, BANK(WriteDMACodeToHRAM)
 """
 
+LOAD_MON_DATA_OLD = """.GetMonHeader
+\tld a, [wCurPartySpecies]
+"""
+LOAD_MON_DATA_NEW = """.GetMonHeader
+\t; YELLOW expansion: mirror the persistent sidecar high byte into the
+\t; 16-bit runtime state while keeping the stock low-byte path unchanged.
+\tfarcall YellowSyncLoadedPersistentSpecies16
+\tld a, [wCurPartySpecies]
+"""
+
 EXPANSION_FILES = (
     "farptr9.inc",
     "id16.inc",
