@@ -55,6 +55,7 @@ EXPANSION_FILES = (
     "item16.asm",
     "item_core.inc",
     "mbc5_bank9.asm",
+    "mon_sidecar_runtime.asm",
     "move16.asm",
     "move_core.inc",
     "species16.asm",

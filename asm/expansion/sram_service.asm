@@ -112,3 +112,6 @@ YellowLeaveSRAMServiceLocked::
     xor a
     ld [rRAMG], a
     ret
+
+; ROM-resident bridge for persistent sidecar banks 4..14.
+INCLUDE "asm/expansion/mon_sidecar_runtime.asm"
