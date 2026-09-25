@@ -38,6 +38,13 @@ jobs:
           ref: e89ead154b9968aa50eed9328ff2b38b6c194382
           path: _reference/pokeyellow
 
+      - name: Checkout integration Yellow reference
+        uses: actions/checkout@v4
+        with:
+          repository: pret/pokeyellow
+          ref: e89ead154b9968aa50eed9328ff2b38b6c194382
+          path: _integration/pokeyellow
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -89,3 +96,16 @@ jobs:
           tail -n 220 _reference/pokeyellow/pokeyellow.map
           echo "=== free/empty/slack markers ==="
           grep -i -E "free|empty|slack|used|total" _reference/pokeyellow/pokeyellow.map || true
+
+      - name: Apply YELLOW runtime overlay
+        run: python tools/apply_pokeyellow_runtime_overlay.py _integration/pokeyellow
+
+      - name: Build integrated 2 MiB Yellow runtime
+        run: make -C _integration/pokeyellow -j$(nproc) DEBUG=1 yellow
+
+      - name: Verify integrated Yellow ROM and SRAM service
+        run: |
+          python tools/verify_integrated_yellow_rom.py _integration/pokeyellow/pokeyellow.gbc --json
+          python tools/verify_sram_service_symbols.py _integration/pokeyellow/pokeyellow.sym --json
+          echo "=== integrated expansion symbols ==="
+          grep -E "Yellow(SRAM|Copy|Resolve|SetROM|RestoreLegacy)" _integration/pokeyellow/pokeyellow.sym || true
