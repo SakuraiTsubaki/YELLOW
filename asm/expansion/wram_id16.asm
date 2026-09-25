@@ -46,3 +46,8 @@ ASSERT wYellowItemCoreScratch + YELLOW_ITEM_SCRATCH_SIZE <= $BC00
 DEF wYellowLoadedMoves EQU $A080 ; 8 bytes
 DEF YELLOW_LOADED_MOVES_SIZE EQU 8
 ASSERT wYellowLoadedMoves + YELLOW_LOADED_MOVES_SIZE <= $BC00
+
+; Player battle-mon logical moves, mirrored from wBattleMonMoves plus sidecar.
+DEF wYellowBattleMonMoves EQU $A088 ; 8 bytes
+DEF YELLOW_BATTLE_MOVES_SIZE EQU 8
+ASSERT wYellowBattleMonMoves + YELLOW_BATTLE_MOVES_SIZE <= $BC00

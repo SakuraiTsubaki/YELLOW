@@ -54,6 +54,25 @@ class RuntimeOverlayTests(unittest.TestCase):
             self.assertIn("YellowSyncLoadedPersistentSpecies16", twice)
             self.assertIn("YellowSyncLoadedPersistentMoves16", twice)
 
+    def test_battle_core_patch_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = pathlib.Path(td) / "core.asm"
+            path.write_text(
+                "x\n"
+                + mod.BATTLE_MON_COPY_OLD
+                + "middle\n"
+                + mod.PLAYER_SELECT_OLD
+                + "y\n",
+                encoding="utf-8",
+            )
+            mod.patch_battle_core(path)
+            once = path.read_text(encoding="utf-8")
+            mod.patch_battle_core(path)
+            twice = path.read_text(encoding="utf-8")
+            self.assertEqual(once, twice)
+            self.assertIn("YellowSyncBattleMonMoves16", twice)
+            self.assertIn("YellowSyncPlayerSelectedMove16", twice)
+
     def test_makefile_promotes_ram_header_to_128k(self):
         with tempfile.TemporaryDirectory() as td:
             path = pathlib.Path(td) / "Makefile"

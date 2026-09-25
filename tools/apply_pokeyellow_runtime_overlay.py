@@ -72,6 +72,28 @@ COPY_MON_DATA_NEW = """.copyMonData
 \tret
 """
 
+BATTLE_MON_COPY_OLD = """\tld de, wBattleMonSpecies
+\tld bc, wBattleMonDVs - wBattleMonSpecies
+\tcall CopyData
+"""
+BATTLE_MON_COPY_NEW = """\tld de, wBattleMonSpecies
+\tld bc, wBattleMonDVs - wBattleMonSpecies
+\tcall CopyData
+\tfarcall YellowSyncBattleMonMoves16
+"""
+
+PLAYER_SELECT_OLD = """\tld a, [hl]
+\tld [wPlayerSelectedMove], a
+\txor a
+\tret
+"""
+PLAYER_SELECT_NEW = """\tld a, [hl]
+\tld [wPlayerSelectedMove], a
+\tfarcall YellowSyncPlayerSelectedMove16
+\txor a
+\tret
+"""
+
 EXPANSION_FILES = (
     "farptr9.inc",
     "id16.inc",
@@ -141,6 +163,23 @@ def patch_load_mon_data(path: Path) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def patch_battle_core(path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    text = replace_once(
+        text,
+        BATTLE_MON_COPY_OLD,
+        BATTLE_MON_COPY_NEW,
+        "engine/battle/core.asm battle move mirror",
+    )
+    text = replace_once(
+        text,
+        PLAYER_SELECT_OLD,
+        PLAYER_SELECT_NEW,
+        "engine/battle/core.asm player selected move mirror",
+    )
+    path.write_text(text, encoding="utf-8")
+
+
 def patch_makefile(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
     expanded = 'RGBFIXFLAGS += -cjsv -k 01 -l 0x33 -m MBC5+RAM+BATTERY -r 04 -t "POKEMON YELLOW"'
@@ -169,6 +208,7 @@ def apply(repo_root: Path, target_root: Path) -> None:
         "layout.link",
         "home/init.asm",
         "engine/pokemon/load_mon_data.asm",
+        "engine/battle/core.asm",
         "Makefile",
     ):
         if not (target_root / rel).is_file():
@@ -179,6 +219,7 @@ def apply(repo_root: Path, target_root: Path) -> None:
     patch_layout(target_root / "layout.link")
     patch_init(target_root / "home" / "init.asm")
     patch_load_mon_data(target_root / "engine" / "pokemon" / "load_mon_data.asm")
+    patch_battle_core(target_root / "engine" / "battle" / "core.asm")
     patch_makefile(target_root / "Makefile")
 
 

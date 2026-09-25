@@ -189,3 +189,112 @@ YellowSyncLoadedPersistentMoves16::
     pop af
     ldh [rIE], a
     ret
+
+YellowSyncBattleMonMoveIndex16Locked::
+; Input: D = move index 0..3.
+; Player party battle source only: wWhichPokemon maps directly to canonical
+; party slots 0..5. Mirrors wBattleMonMoves[D] + sidecar high byte.
+; PRECONDITION: interrupts disabled.
+    ld a, d
+    cp 4
+    ret nc
+
+    ld a, [wWhichPokemon]
+    cp PARTY_LENGTH
+    jr nc, .transient
+    ld b, a
+    jr .have_slot
+.transient
+    ld b, $ff
+.have_slot
+
+    ld hl, wBattleMonMoves
+    ld a, l
+    add d
+    ld l, a
+    jr nc, .low_ptr_ok
+    inc h
+.low_ptr_ok
+    ld c, [hl]
+
+    ld a, d
+    add a
+    add LOW(wYellowBattleMonMoves)
+    ld l, a
+    ld a, HIGH(wYellowBattleMonMoves)
+    adc 0
+    ld h, a
+    push hl
+    push bc
+
+    ld a, b
+    cp $ff
+    jr z, .zero_high
+    ld a, d
+    inc a
+    ld c, a
+    ld a, b
+    call YellowReadMonExtByteLocked
+    jr .have_high
+.zero_high
+    xor a
+.have_high
+    pop bc
+    pop hl
+    ld b, a
+    jp YellowStoreRuntimeWordLocked
+
+YellowSyncBattleMonMoves16::
+; Called immediately after stock LoadBattleMonFromParty has populated
+; wBattleMonMoves.
+    ldh a, [rIE]
+    push af
+    xor a
+    ldh [rIE], a
+
+    ld d, 0
+    call YellowSyncBattleMonMoveIndex16Locked
+    ld d, 1
+    call YellowSyncBattleMonMoveIndex16Locked
+    ld d, 2
+    call YellowSyncBattleMonMoveIndex16Locked
+    ld d, 3
+    call YellowSyncBattleMonMoveIndex16Locked
+
+    pop af
+    ldh [rIE], a
+    ret
+
+YellowSyncPlayerSelectedMove16::
+; Mirror the current regular player move selection from the 16-bit battle-move
+; array. Stock wPlayerSelectedMove remains the low byte for legacy consumers.
+    ld a, [wPlayerMoveListIndex]
+    cp 4
+    ret nc
+    add a
+    ld e, a
+    ld d, 0
+
+    ldh a, [rIE]
+    push af
+    xor a
+    ldh [rIE], a
+
+    ld a, $0a
+    ld [rRAMG], a
+    ld a, YELLOW_RUNTIME_SRAM_BANK
+    ld [rRAMB], a
+
+    ld hl, wYellowBattleMonMoves
+    add hl, de
+    ld a, [hli]
+    ld [wYellowPlayerSelectedMove], a
+    ld a, [hl]
+    ld [wYellowPlayerSelectedMove + 1], a
+
+    xor a
+    ld [rRAMG], a
+
+    pop af
+    ldh [rIE], a
+    ret
