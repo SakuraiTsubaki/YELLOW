@@ -70,6 +70,14 @@ jobs:
           rgbasm -Wall -Wextra -o /tmp/yellow-expansion.o tests/asm/expansion_harness.asm
           rgblink -o /tmp/yellow-expansion.gb /tmp/yellow-expansion.o
 
+      - name: Link SRAM runtime service harness
+        run: |
+          rgbasm -Wall -Wextra -o /tmp/yellow-sram-service.o tests/asm/sram_service_harness.asm
+          rgblink -n /tmp/yellow-sram-service.sym -m /tmp/yellow-sram-service.map -o /tmp/yellow-sram-service.gb /tmp/yellow-sram-service.o
+          python tools/verify_sram_service_symbols.py /tmp/yellow-sram-service.sym --json
+          echo "=== SRAM service map ==="
+          cat /tmp/yellow-sram-service.map
+
       - name: Build structural Yellow reference with map
         run: make -C _reference/pokeyellow -j$(nproc) DEBUG=1 yellow
 
