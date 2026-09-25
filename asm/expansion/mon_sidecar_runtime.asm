@@ -82,14 +82,19 @@ YellowComposePersistentSpecies16Locked::
 ; Output:
 ;   BC = 16-bit logical species ID
 ; Carry set if slot is invalid.
-    ld e, a
+    push af
     ld a, d
     ld c, YELLOW_MON_EXT_SPECIES_HIGH
     call YellowReadMonExtByteLocked
-    ret c
+    jr c, .invalid
     ld b, a
-    ld c, e
+    pop af
+    ld c, a
     and a
+    ret
+.invalid
+    pop af
+    scf
     ret
 
 YellowReadPersistentMoveHighLocked::
