@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "project": "YELLOW",
+  "canonical_runtime": "original Game Boy / Super Game Boy / Game Boy Color Yellow engine",
+  "gba_work": "separate project; never use as YELLOW runtime baseline",
+  "structural_reference": {
+    "repository": "pret/pokeyellow",
+    "commit": "e89ead154b9968aa50eed9328ff2b38b6c194382"
+  },
+  "last_verified_work": {
+    "commit": "7cb76556d942f272268f42201e27cd9982978546",
+    "message": "Preserve low species byte in sidecar bridge",
+    "github_actions_run": 36095086372,
+    "conclusion": "success"
+  },
+  "completed": [
+    "Verified 9 unique Yellow/Pikachu ROM baselines from the supplied 14 filenames",
+    "Separated Japanese MBC3 and international MBC5 legacy save profiles",
+    "Defined MBC5 9-bit ROM-bank ABI for banks 0..511",
+    "Defined mapper-native ROM expansion and validated derived images",
+    "Defined 128 KiB expanded SRAM envelope while preserving legacy 32 KiB",
+    "Defined 247-slot persistent Pokemon extension sidecar",
+    "Implemented 16-bit species, move and item banked core-table loaders",
+    "Audited stock pokeyellow ROM0/WRAM0/HRAM pressure and 8-bit chokepoints",
+    "Reserved SRAM bank 15 and $BC00..$BFFF 1 KiB runtime-service window",
+    "Implemented boot installation of SRAM runtime service from expansion ROM bank $40",
+    "Integrated overlay builds a verified 2 MiB MBC5 Yellow image with 128 KiB SRAM header",
+    "Initialized volatile YRT1 16-bit runtime state at boot",
+    "Implemented ROM-resident persistent-sidecar byte reader and species low+high composer",
+    "Latest full unit/RGBDS/reference/integration CI passes"
+  ],
+  "current_architecture": {
+    "expansion_rom_service_bank": "0x40",
+    "expansion_rom_anchor_bank": "0x7F",
+    "integrated_rom_size_mib": 2,
+    "maximum_planned_mbc5_rom_mib": 8,
+    "expanded_sram_kib": 128,
+    "persistent_sram_banks": "0..14",
+    "volatile_runtime_sram_bank": 15,
+    "runtime_state": "0xA000..0xA01D",
+    "runtime_service": "0xBC00..0xBFFF",
+    "species_move_item_logical_id_bits": 16
+  },
+  "resume_from": {
+    "stage": "first real stock-runtime species bridge",
+    "next_task": "Patch the structural Yellow LoadMonData_ path so player-party/PC/daycare legacy low-byte species is combined with the persistent sidecar high byte, mirrored into YRT1 16-bit runtime state, and then consumed by a high-ID-aware species-core path without changing legacy-ID behavior.",
+    "constraints": [
+      "Do not enable IDs above 255 until every consumer in that path is widened or guarded",
+      "Enemy/trainer species need a separate transient high-byte source, not persistent PC sidecar",
+      "Do not switch SRAM away from bank 15 while executing SRAM-resident service code",
+      "ROM-resident bank $40 bridge performs persistent SRAM bank 4 access",
+      "Keep JP and international physical save layouts separate while mapping both to canonical persistent slots",
+      "No ROM or SAV binaries committed to GitHub"
+    ]
+  }
+}
