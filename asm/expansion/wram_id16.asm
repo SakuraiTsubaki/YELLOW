@@ -25,3 +25,17 @@ DEF wYellowTrainerClass       EQU $A01C ; 2 bytes
 
 DEF YELLOW_RUNTIME_STATE_END  EQU $A01E
 DEF YELLOW_RUNTIME_STATE_SIZE EQU YELLOW_RUNTIME_STATE_END - YELLOW_RUNTIME_BASE
+
+; Core-record scratch buffers. These live below the $BC00 service image and
+; never overlap the persistent extension, which is in SRAM banks 4..14.
+DEF wYellowSpeciesCoreScratch EQU $A020
+DEF wYellowMoveCoreScratch    EQU $A040
+DEF wYellowItemCoreScratch    EQU $A060
+
+DEF YELLOW_SPECIES_SCRATCH_SIZE EQU $20
+DEF YELLOW_MOVE_SCRATCH_SIZE    EQU $20
+DEF YELLOW_ITEM_SCRATCH_SIZE    EQU $20
+
+ASSERT wYellowSpeciesCoreScratch + YELLOW_SPECIES_SCRATCH_SIZE <= wYellowMoveCoreScratch
+ASSERT wYellowMoveCoreScratch + YELLOW_MOVE_SCRATCH_SIZE <= wYellowItemCoreScratch
+ASSERT wYellowItemCoreScratch + YELLOW_ITEM_SCRATCH_SIZE <= YELLOW_SRAM_SERVICE_ADDR

@@ -26,3 +26,21 @@ YellowCopySpeciesCore16Locked::
     call YellowCopyFromBank9Locked
     and a
     ret
+
+YellowPrefetchCurrentSpeciesCore16Locked::
+; Prefetch the currently mirrored 16-bit species core into SRAM-bank-15
+; scratch. This routine runs from the SRAM service itself.
+;
+; PRECONDITION:
+;   - interrupts disabled
+;   - SRAM enabled, bank 15 selected
+;   - wYellowCurSpecies contains the logical ID
+; OUTPUT:
+;   Carry clear: wYellowSpeciesCoreScratch contains species core v1
+;   Carry set: no descriptor/record exists for the logical ID
+    ld a, [wYellowCurSpecies]
+    ld c, a
+    ld a, [wYellowCurSpecies + 1]
+    ld b, a
+    ld hl, wYellowSpeciesCoreScratch
+    jp YellowCopySpeciesCore16Locked
