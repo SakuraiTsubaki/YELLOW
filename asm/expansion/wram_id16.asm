@@ -41,3 +41,8 @@ DEF YELLOW_ITEM_SCRATCH_SIZE    EQU $20
 ASSERT wYellowSpeciesCoreScratch + YELLOW_SPECIES_SCRATCH_SIZE <= wYellowMoveCoreScratch
 ASSERT wYellowMoveCoreScratch + YELLOW_MOVE_SCRATCH_SIZE <= wYellowItemCoreScratch
 ASSERT wYellowItemCoreScratch + YELLOW_ITEM_SCRATCH_SIZE <= $BC00
+
+; Four 16-bit logical moves corresponding to stock wLoadedMonMoves[0..3].
+DEF wYellowLoadedMoves EQU $A080 ; 8 bytes
+DEF YELLOW_LOADED_MOVES_SIZE EQU 8
+ASSERT wYellowLoadedMoves + YELLOW_LOADED_MOVES_SIZE <= $BC00

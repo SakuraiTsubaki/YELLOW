@@ -59,6 +59,19 @@ LOAD_MON_DATA_NEW = """.GetMonHeader
 \tld a, [wCurPartySpecies]
 """
 
+COPY_MON_DATA_OLD = """.copyMonData
+\tld de, wLoadedMon
+\tld bc, PARTYMON_STRUCT_LENGTH
+\tjp CopyData
+"""
+COPY_MON_DATA_NEW = """.copyMonData
+\tld de, wLoadedMon
+\tld bc, PARTYMON_STRUCT_LENGTH
+\tcall CopyData
+\tfarcall YellowSyncLoadedPersistentMoves16
+\tret
+"""
+
 EXPANSION_FILES = (
     "farptr9.inc",
     "id16.inc",
@@ -117,7 +130,13 @@ def patch_load_mon_data(path: Path) -> None:
         text,
         LOAD_MON_DATA_OLD,
         LOAD_MON_DATA_NEW,
-        "engine/pokemon/load_mon_data.asm",
+        "engine/pokemon/load_mon_data.asm species bridge",
+    )
+    text = replace_once(
+        text,
+        COPY_MON_DATA_OLD,
+        COPY_MON_DATA_NEW,
+        "engine/pokemon/load_mon_data.asm move bridge",
     )
     path.write_text(text, encoding="utf-8")
 

@@ -140,3 +140,21 @@ YellowReadPersistentMoveHighLocked::
 .invalid
     scf
     ret
+
+YellowStoreRuntimeWordLocked::
+; Input:
+;   HL = destination in volatile SRAM bank 15
+;   BC = little-endian 16-bit value (C low, B high)
+; PRECONDITION: interrupts disabled, executing from ROM bank $40.
+; POSTCONDITION: SRAM disabled.
+    ld a, $0a
+    ld [rRAMG], a
+    ld a, YELLOW_RUNTIME_SRAM_BANK
+    ld [rRAMB], a
+    ld a, c
+    ld [hli], a
+    ld a, b
+    ld [hl], a
+    xor a
+    ld [rRAMG], a
+    ret
