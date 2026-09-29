@@ -8,9 +8,9 @@
     "commit": "e89ead154b9968aa50eed9328ff2b38b6c194382"
   },
   "last_verified_work": {
-    "commit": "e1e521ea49a47bdc5be0516937ce70871608d9be",
-    "message": "Prefetch 16-bit species core during LoadMonData bridge",
-    "github_actions_run": 36095622858,
+    "commit": "9e2282e461791f618f3ae02fe2bceff7823697f5",
+    "message": "Update SRAM service symbol fixture",
+    "github_actions_run": 36540610291,
     "conclusion": "success"
   },
   "completed": [
@@ -31,7 +31,14 @@
     "Integrated LoadMonData_ persistent species bridge into the structural Yellow build",
     "Mirrors party/PC/daycare species low+sidecar-high into 16-bit YRT1 runtime state",
     "Reserved SRAM-bank-15 species/move/item core scratch buffers below the service window",
-    "Prefetches the current 16-bit species core into runtime scratch when a descriptor/record exists"
+    "Prefetches the current 16-bit species core into runtime scratch when a descriptor/record exists",
+    "Mirrors loaded persistent four move IDs into 16-bit YRT1 runtime state",
+    "Mirrors player battle move slots into 16-bit YRT1 runtime state",
+    "Mirrors regular player move selection into 16-bit selected-move state",
+    "GetCurrentMove now resolves the selected logical 16-bit move ID into wYellowMoveNum",
+    "GetCurrentMove prefetches move-core v1 into SRAM-bank-15 scratch before stock legacy move loading",
+    "Volatile runtime clear window now includes move scratch/state through $A090",
+    "Latest full unit/RGBDS/reference/integration CI passes at run 36540610291"
   ],
   "current_architecture": {
     "expansion_rom_service_bank": "0x40",
@@ -41,19 +48,20 @@
     "expanded_sram_kib": 128,
     "persistent_sram_banks": "0..14",
     "volatile_runtime_sram_bank": 15,
-    "runtime_state": "0xA000..0xA01D",
+    "runtime_state": "0xA000..0xA090",
     "runtime_service": "0xBC00..0xBFFF",
     "species_move_item_logical_id_bits": 16
   },
   "resume_from": {
-    "stage": "persistent move-ID runtime bridge",
-    "next_task": "After LoadMonData_ copies the legacy mon into wLoadedMon, combine its four one-byte move IDs with sidecar move-high bytes and mirror four 16-bit logical moves into SRAM-bank-15 runtime state. Then widen selected-move consumption one path at a time.",
+    "stage": "16-bit selected-move legacy battle-view projection",
+    "next_task": "Use the prefetched move-core v1 record to populate the stock six-byte battle move view (animation/effect/power/type/accuracy/PP) with explicit range/encoding guards. Preserve low-ID stock behavior, then allow the first >255 move ID through GetCurrentMove only when its core record can be represented safely by the current battle engine.",
     "constraints": [
-      "Do not enable IDs above 255 in battle until move selectors and effect lookup consumers are widened",
-      "Keep legacy one-byte move fields byte-exact",
-      "Use ROM bank $40 for persistent SRAM-bank-4 sidecar reads",
+      "Do not enable arbitrary IDs above 255 until stock battle fields that remain one byte have explicit conversion/range rules",
+      "Keep legacy one-byte move fields byte-exact for original moves",
+      "Dynamic legacy moves such as Struggle, Metronome and Mirror Move must fall back to high byte zero until their own 16-bit paths are migrated",
       "Use SRAM bank 15 only for volatile runtime state/service/scratch",
-      "No ROM or SAV binaries committed to GitHub"
+      "No ROM or SAV binaries committed to GitHub",
+      "GBA work remains separate from YELLOW"
     ]
   }
 }
