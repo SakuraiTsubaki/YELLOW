@@ -298,3 +298,86 @@ YellowSyncPlayerSelectedMove16::
     pop af
     ldh [rIE], a
     ret
+
+YellowPrepareCurrentMove16::
+; First 16-bit consumer bridge for stock GetCurrentMove.
+;
+; Player path:
+;   If the stock selected low byte still matches the selected battle slot,
+;   consume the full 16-bit wYellowBattleMonMoves entry. Dynamic legacy moves
+;   (Struggle/Metronome/Mirror Move/debug paths) fall back to high byte zero.
+;
+; Enemy path:
+;   Enemy move generation is still legacy-width at this stage, so mirror the
+;   selected low byte with high byte zero.
+;
+; The resolved logical ID is written to wYellowMoveNum and its move-core record
+; is prefetched. Stock GetCurrentMove continues afterward, so IDs >255 remain
+; gated until the legacy battle-view projection is integrated.
+    ldh a, [rIE]
+    push af
+    xor a
+    ldh [rIE], a
+
+    ld a, $0a
+    ld [rRAMG], a
+    ld a, YELLOW_RUNTIME_SRAM_BANK
+    ld [rRAMB], a
+
+    ldh a, [hWhoseTurn]
+    and a
+    jr nz, .enemy
+
+    ; Fight debug bypasses the normal selected battle-slot source.
+    ld a, [wStatusFlags7]
+    bit BIT_TEST_BATTLE, a
+    jr nz, .player_test
+
+    ld a, [wPlayerMoveListIndex]
+    cp NUM_MOVES
+    jr nc, .player_legacy
+    add a
+    ld e, a
+    ld d, 0
+    ld hl, wYellowBattleMonMoves
+    add hl, de
+
+    ; Only trust the high byte when the stock low byte still names this slot.
+    ld a, [wPlayerSelectedMove]
+    cp [hl]
+    jr nz, .player_legacy
+    ld c, [hl]
+    inc hl
+    ld b, [hl]
+    jr .store
+
+.player_test
+    ld a, [wTestBattlePlayerSelectedMove]
+    jr .legacy_a
+
+.player_legacy
+    ld a, [wPlayerSelectedMove]
+.legacy_a
+    ld c, a
+    ld b, 0
+    jr .store
+
+.enemy
+    ld a, [wEnemySelectedMove]
+    ld c, a
+    ld b, 0
+
+.store
+    ld a, c
+    ld [wYellowMoveNum], a
+    ld a, b
+    ld [wYellowMoveNum + 1], a
+
+    call YellowPrefetchCurrentMoveCore16Locked
+
+    xor a
+    ld [rRAMG], a
+
+    pop af
+    ldh [rIE], a
+    ret

@@ -13,6 +13,7 @@ REQUIRED = {
     "YellowSRAMServiceImage": ("rom_image", 0x40, 0x4000, 0x7FFF),
     "YellowCopySpeciesCore16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
     "YellowCopyMoveCore16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
+    "YellowPrefetchCurrentMoveCore16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
     "YellowCopyItemCore16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
 }
 

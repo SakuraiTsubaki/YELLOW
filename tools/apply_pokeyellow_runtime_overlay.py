@@ -94,6 +94,16 @@ PLAYER_SELECT_NEW = """\tld a, [hl]
 \tret
 """
 
+GET_CURRENT_MOVE_OLD = """GetCurrentMove:
+\tldh a, [hWhoseTurn]
+"""
+GET_CURRENT_MOVE_NEW = """GetCurrentMove:
+\t; YELLOW expansion: resolve the selected logical move ID and prefetch its
+\t; 16-bit move-core record before the stock legacy view is loaded.
+\tfarcall YellowPrepareCurrentMove16
+\tldh a, [hWhoseTurn]
+"""
+
 EXPANSION_FILES = (
     "farptr9.inc",
     "id16.inc",
@@ -176,6 +186,12 @@ def patch_battle_core(path: Path) -> None:
         PLAYER_SELECT_OLD,
         PLAYER_SELECT_NEW,
         "engine/battle/core.asm player selected move mirror",
+    )
+    text = replace_once(
+        text,
+        GET_CURRENT_MOVE_OLD,
+        GET_CURRENT_MOVE_NEW,
+        "engine/battle/core.asm current move 16-bit consumer",
     )
     path.write_text(text, encoding="utf-8")
 

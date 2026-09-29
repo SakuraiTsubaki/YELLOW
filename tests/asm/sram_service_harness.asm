@@ -55,6 +55,7 @@ ASSERT YELLOW_SRAM_SERVICE_SIZE <= $0400
 ASSERT YellowCopySpeciesCore16Locked >= $BC00 && YellowCopySpeciesCore16Locked < $C000
 ASSERT YellowPrefetchCurrentSpeciesCore16Locked >= $BC00 && YellowPrefetchCurrentSpeciesCore16Locked < $C000
 ASSERT YellowCopyMoveCore16Locked >= $BC00 && YellowCopyMoveCore16Locked < $C000
+ASSERT YellowPrefetchCurrentMoveCore16Locked >= $BC00 && YellowPrefetchCurrentMoveCore16Locked < $C000
 ASSERT YellowCopyItemCore16Locked >= $BC00 && YellowCopyItemCore16Locked < $C000
 ASSERT BANK(YellowReadMonExtByteLocked) == $40
 ASSERT BANK(YellowComposePersistentSpecies16Locked) == $40

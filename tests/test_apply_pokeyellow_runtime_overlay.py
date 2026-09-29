@@ -62,6 +62,8 @@ class RuntimeOverlayTests(unittest.TestCase):
                 + mod.BATTLE_MON_COPY_OLD
                 + "middle\n"
                 + mod.PLAYER_SELECT_OLD
+                + "middle2\n"
+                + mod.GET_CURRENT_MOVE_OLD
                 + "y\n",
                 encoding="utf-8",
             )
@@ -72,6 +74,7 @@ class RuntimeOverlayTests(unittest.TestCase):
             self.assertEqual(once, twice)
             self.assertIn("YellowSyncBattleMonMoves16", twice)
             self.assertIn("YellowSyncPlayerSelectedMove16", twice)
+            self.assertIn("YellowPrepareCurrentMove16", twice)
 
     def test_makefile_promotes_ram_header_to_128k(self):
         with tempfile.TemporaryDirectory() as td:
