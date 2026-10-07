@@ -19,6 +19,11 @@ DEF YMC_ANIMATION        EQU 18 ; dw
 DEF YMC_EFFECT_SCRIPT    EQU 20 ; dw
 DEF YMC_RESERVED         EQU 22 ; dw
 
+; Bit 0 explicitly opts a move into the temporary Gen I six-byte battle view.
+; The record must already use stock-compatible type/effect/animation IDs and
+; Gen I encoded accuracy before this flag may be set.
+DEF YMC_FLAG_LEGACY_VIEW_SAFE EQU 0
+
 MACRO yellow_move_core_v1
 ; type, power, accuracy, pp, priority, category, target,
 ; effect, effect_chance, generation, flags, animation, effect_script
