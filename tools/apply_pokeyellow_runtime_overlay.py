@@ -115,6 +115,8 @@ EXPANSION_FILES = (
     "pokeyellow_bridge.asm",
     "move16.asm",
     "move_core.inc",
+    "move_name.inc",
+    "move_name16.asm",
     "species16.asm",
     "species_core.inc",
     "sram_service.asm",
@@ -192,6 +194,12 @@ def patch_battle_core(path: Path) -> None:
         GET_CURRENT_MOVE_OLD,
         GET_CURRENT_MOVE_NEW,
         "engine/battle/core.asm current move 16-bit consumer",
+    )
+    text = replace_once(
+        text,
+        GET_CURRENT_MOVE_NAME_OLD,
+        GET_CURRENT_MOVE_NAME_NEW,
+        "engine/battle/core.asm projected move-name join",
     )
     path.write_text(text, encoding="utf-8")
 
