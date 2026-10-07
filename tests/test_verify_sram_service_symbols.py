@@ -18,6 +18,8 @@ class VerifySramServiceSymbolsTests(unittest.TestCase):
             "0f:bc40 YellowCopySpeciesCore16Locked\n"
             "0f:bc80 YellowCopyMoveCore16Locked\n"
             "0f:bca0 YellowPrefetchCurrentMoveCore16Locked\n"
+            "0f:bcb0 YellowCopyMoveName16Locked\n"
+            "0f:bcba YellowPrefetchCurrentMoveName16Locked\n"
             "0f:bcc0 YellowCopyItemCore16Locked\n"
         )
         report = mod.verify(symbols)
@@ -34,6 +36,8 @@ class VerifySramServiceSymbolsTests(unittest.TestCase):
             "0f:bbff YellowCopySpeciesCore16Locked\n"
             "0f:bc80 YellowCopyMoveCore16Locked\n"
             "0f:bca0 YellowPrefetchCurrentMoveCore16Locked\n"
+            "0f:bcb0 YellowCopyMoveName16Locked\n"
+            "0f:bcba YellowPrefetchCurrentMoveName16Locked\n"
             "0f:bcc0 YellowCopyItemCore16Locked\n"
         )
         with self.assertRaises(ValueError):
