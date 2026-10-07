@@ -14,6 +14,8 @@ REQUIRED = {
     "YellowCopySpeciesCore16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
     "YellowCopyMoveCore16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
     "YellowPrefetchCurrentMoveCore16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
+    "YellowCopyMoveName16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
+    "YellowPrefetchCurrentMoveName16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
     "YellowCopyItemCore16Locked": ("sram_code", 0x0F, 0xBC00, 0xBFFF),
 }
 
