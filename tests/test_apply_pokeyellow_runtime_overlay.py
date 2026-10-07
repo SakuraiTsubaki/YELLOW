@@ -75,6 +75,8 @@ class RuntimeOverlayTests(unittest.TestCase):
             self.assertIn("YellowSyncBattleMonMoves16", twice)
             self.assertIn("YellowSyncPlayerSelectedMove16", twice)
             self.assertIn("YellowPrepareCurrentMove16", twice)
+            self.assertIn("YellowTryProjectCurrentMoveLegacyView16", twice)
+            self.assertIn(".yellowNameReady", twice)
 
     def test_makefile_promotes_ram_header_to_128k(self):
         with tempfile.TemporaryDirectory() as td:
