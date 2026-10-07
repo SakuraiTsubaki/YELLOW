@@ -15,6 +15,7 @@ INCLUDE "asm/expansion/mbc5_bank9.asm"
 INCLUDE "asm/expansion/index16.asm"
 INCLUDE "asm/expansion/species16.asm"
 INCLUDE "asm/expansion/move16.asm"
+INCLUDE "asm/expansion/move_name16.asm"
 INCLUDE "asm/expansion/item16.asm"
 
 YellowInitRuntimeStateLocked::
@@ -57,6 +58,8 @@ IF !DEF(YELLOW_EXTERNAL_TABLE_DESCRIPTORS)
 YellowSpeciesTableDescriptor::
     dw 0, 0, 0
 YellowMoveTableDescriptor::
+    dw 0, 0, 0
+YellowMoveNameTableDescriptor::
     dw 0, 0, 0
 YellowItemTableDescriptor::
     dw 0, 0, 0
