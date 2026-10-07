@@ -1,0 +1,24 @@
+schema_version: 1
+project: YELLOW
+status: move_name_v1_defined
+
+record:
+  bytes: 13
+  fields:
+    - {offset: 0, size: 1, name: length, range: "1..12"}
+    - {offset: 1, size: 12, name: encoded_text}
+  encoding: active Yellow Game Boy text encoding
+  terminator_storage: runtime appends stock '@' terminator
+  in_battle_visible_character_limit: 12
+
+runtime:
+  resolver: YellowResolveMoveNameRecord16
+  loader: YellowCopyMoveName16Locked
+  prefetch: YellowPrefetchCurrentMoveName16Locked
+  scratch: wYellowMoveNameScratch
+  projection_consumer: YellowTryProjectCurrentMoveLegacyView16
+
+policy:
+  - no fallback to a wrong low-byte move name for IDs above 255
+  - missing or oversized names fail the legacy-view projection
+  - original move IDs keep the stock MoveNames path byte-exact
