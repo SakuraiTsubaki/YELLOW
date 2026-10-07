@@ -27,6 +27,18 @@ design:
   accuracy_bits: 16
   flags_bits: 32
   future_counts_are_not_guessed: true
+legacy_projection:
+  opt_in_flag: legacy_view_safe
+  accuracy_encoding_when_opted_in: gen1_move_accuracy_byte
+  guards:
+    - animation must fit the stock Yellow animation table
+    - effect must fit the stock Yellow move-effect table
+    - power must fit one byte
+    - type must be a stock Yellow type code
+    - accuracy high byte must be zero
+    - pp must be at most 40
+    - an expanded move-name record of 1..12 characters must exist
+  rule: low-ID original moves always use the untouched stock Moves and MoveNames tables
 runtime:
   resolver: YellowResolveMoveRecord16
   loader: YellowCopyMoveCore16Locked
