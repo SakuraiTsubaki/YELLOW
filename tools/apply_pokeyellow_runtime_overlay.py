@@ -98,10 +98,28 @@ GET_CURRENT_MOVE_OLD = """GetCurrentMove:
 \tldh a, [hWhoseTurn]
 """
 GET_CURRENT_MOVE_NEW = """GetCurrentMove:
-\t; YELLOW expansion: resolve the selected logical move ID and prefetch its
-\t; 16-bit move-core record before the stock legacy view is loaded.
+\t; YELLOW expansion: prefetch logical move core/name records. Explicitly
+\t; compatible >255 moves project into the stock battle view; original low
+\t; IDs stay on the byte-exact legacy path.
 \tfarcall YellowPrepareCurrentMove16
+\tfarcall YellowTryProjectCurrentMoveLegacyView16
+\tjp nc, .yellowNameReady
 \tldh a, [hWhoseTurn]
+"""
+
+GET_CURRENT_MOVE_NAME_OLD = """\tld a, MOVE_NAME
+\tld [wNameListType], a
+\tcall GetName
+\tld de, wNameBuffer
+\tjp CopyToStringBuffer
+"""
+
+GET_CURRENT_MOVE_NAME_NEW = """\tld a, MOVE_NAME
+\tld [wNameListType], a
+\tcall GetName
+.yellowNameReady
+\tld de, wNameBuffer
+\tjp CopyToStringBuffer
 """
 
 EXPANSION_FILES = (
