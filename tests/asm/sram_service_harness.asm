@@ -22,6 +22,10 @@ YellowMoveTableDescriptor::
     dw 1
     dw $02
     dw $5100
+YellowMoveNameTableDescriptor::
+    dw 1
+    dw $02
+    dw $5300
 YellowItemTableDescriptor::
     dw 1
     dw $02
@@ -39,12 +43,20 @@ SECTION "SRAM Service Harness Item", ROMX[$4200], BANK[$102]
 HarnessItemRecord::
     ds 24, $33
 
+SECTION "SRAM Service Harness Move Name", ROMX[$4300], BANK[$103]
+HarnessMoveNameRecord::
+    db 4
+    ds 4, $44
+    ds 8, 0
+
 SECTION "SRAM Service Harness Index", ROMX[$5000], BANK[$02]
     db LOW(BANK(HarnessSpeciesRecord)), LOW(HarnessSpeciesRecord - $4000), $40 | HIGH(HarnessSpeciesRecord - $4000)
     ds $100 - 3, $ff
     db LOW(BANK(HarnessMoveRecord)), LOW(HarnessMoveRecord - $4000), $40 | HIGH(HarnessMoveRecord - $4000)
     ds $100 - 3, $ff
     db LOW(BANK(HarnessItemRecord)), LOW(HarnessItemRecord - $4000), $40 | HIGH(HarnessItemRecord - $4000)
+    ds $100 - 3, $ff
+    db LOW(BANK(HarnessMoveNameRecord)), LOW(HarnessMoveNameRecord - $4000), $40 | HIGH(HarnessMoveNameRecord - $4000)
 
 SECTION "YELLOW Expansion Service ROM", ROMX[$4000], BANK[$40]
 INCLUDE "asm/expansion/sram_service.asm"
@@ -56,6 +68,8 @@ ASSERT YellowCopySpeciesCore16Locked >= $BC00 && YellowCopySpeciesCore16Locked <
 ASSERT YellowPrefetchCurrentSpeciesCore16Locked >= $BC00 && YellowPrefetchCurrentSpeciesCore16Locked < $C000
 ASSERT YellowCopyMoveCore16Locked >= $BC00 && YellowCopyMoveCore16Locked < $C000
 ASSERT YellowPrefetchCurrentMoveCore16Locked >= $BC00 && YellowPrefetchCurrentMoveCore16Locked < $C000
+ASSERT YellowCopyMoveName16Locked >= $BC00 && YellowCopyMoveName16Locked < $C000
+ASSERT YellowPrefetchCurrentMoveName16Locked >= $BC00 && YellowPrefetchCurrentMoveName16Locked < $C000
 ASSERT YellowCopyItemCore16Locked >= $BC00 && YellowCopyItemCore16Locked < $C000
 ASSERT BANK(YellowReadMonExtByteLocked) == $40
 ASSERT BANK(YellowComposePersistentSpecies16Locked) == $40
