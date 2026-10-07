@@ -64,6 +64,8 @@ class RuntimeOverlayTests(unittest.TestCase):
                 + mod.PLAYER_SELECT_OLD
                 + "middle2\n"
                 + mod.GET_CURRENT_MOVE_OLD
+                + "middle3\n"
+                + mod.GET_CURRENT_MOVE_NAME_OLD
                 + "y\n",
                 encoding="utf-8",
             )
