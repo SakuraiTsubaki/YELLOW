@@ -25,7 +25,7 @@ DEF wYellowTrainerClass       EQU $A01C ; 2 bytes
 DEF wYellowSpeciesCoreStatus   EQU $A01E ; 0 missing/not loaded, 1 ready
 DEF wYellowRuntimeFlags        EQU $A01F
 
-DEF YELLOW_RUNTIME_STATE_END  EQU $A091
+DEF YELLOW_RUNTIME_STATE_END  EQU $A09F
 DEF YELLOW_RUNTIME_STATE_SIZE EQU YELLOW_RUNTIME_STATE_END - YELLOW_RUNTIME_BASE
 
 ; Core-record scratch buffers. These live below the $BC00 service image and
@@ -55,4 +55,12 @@ ASSERT wYellowBattleMonMoves + YELLOW_BATTLE_MOVES_SIZE <= $BC00
 ; Current selected-move core prefetch status.
 ; 0 = descriptor/record missing or not prefetched, 1 = scratch is ready.
 DEF wYellowMoveCoreStatus EQU $A090
-ASSERT wYellowMoveCoreStatus < YELLOW_RUNTIME_STATE_END
+
+; Expanded move-name scratch: one length byte + up to 12 encoded characters.
+DEF wYellowMoveNameScratch EQU $A091
+DEF YELLOW_MOVE_NAME_SCRATCH_SIZE EQU 13
+DEF wYellowMoveNameStatus EQU $A09E
+
+ASSERT wYellowMoveCoreStatus < wYellowMoveNameScratch
+ASSERT wYellowMoveNameScratch + YELLOW_MOVE_NAME_SCRATCH_SIZE <= wYellowMoveNameStatus
+ASSERT wYellowMoveNameStatus < YELLOW_RUNTIME_STATE_END
