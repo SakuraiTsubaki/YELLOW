@@ -8,9 +8,9 @@
     "commit": "e89ead154b9968aa50eed9328ff2b38b6c194382"
   },
   "last_verified_work": {
-    "commit": "9e2282e461791f618f3ae02fe2bceff7823697f5",
-    "message": "Update SRAM service symbol fixture",
-    "github_actions_run": 36540610291,
+    "commit": "85de33d913522c1ee06ca5e6b79b61dea1022893",
+    "message": "Fix GetCurrentMove overlay test fixture",
+    "github_actions_run": 37597463407,
     "conclusion": "success"
   },
   "completed": [
@@ -38,7 +38,15 @@
     "GetCurrentMove now resolves the selected logical 16-bit move ID into wYellowMoveNum",
     "GetCurrentMove prefetches move-core v1 into SRAM-bank-15 scratch before stock legacy move loading",
     "Volatile runtime clear window now includes move scratch/state through $A090",
-    "Latest full unit/RGBDS/reference/integration CI passes at run 36540610291"
+    "Latest full unit/RGBDS/reference/integration CI passes at run 36540610291",
+    "Defined move-name v1 as a 13-byte length+12-character Game Boy encoded record",
+    "Prefetches 16-bit move names alongside move-core v1 into SRAM-bank-15 runtime scratch",
+    "Added explicit move-core legacy_view_safe opt-in and Gen I representation guards",
+    "Projects explicitly compatible >255 logical moves into the stock six-byte battle move view",
+    "Expanded move projection writes animation/effect/power/type/Gen-I accuracy/PP only after range validation",
+    "Expanded move names populate wNameBuffer without falling back to an incorrect low-byte MoveNames entry",
+    "Original low-ID moves remain on the untouched stock Moves/MoveNames path",
+    "Latest full unit/RGBDS/reference/integration CI passes at run 37597463407"
   ],
   "current_architecture": {
     "expansion_rom_service_bank": "0x40",
@@ -48,17 +56,21 @@
     "expanded_sram_kib": 128,
     "persistent_sram_banks": "0..14",
     "volatile_runtime_sram_bank": 15,
-    "runtime_state": "0xA000..0xA090",
+    "runtime_state": "0xA000..0xA09E",
     "runtime_service": "0xBC00..0xBFFF",
-    "species_move_item_logical_id_bits": 16
+    "species_move_item_logical_id_bits": 16,
+    "move_name_record": "13 bytes: length + 12 encoded characters",
+    "high_move_legacy_projection": "explicit opt-in only"
   },
   "resume_from": {
-    "stage": "16-bit selected-move legacy battle-view projection",
-    "next_task": "Use the prefetched move-core v1 record to populate the stock six-byte battle move view (animation/effect/power/type/accuracy/PP) with explicit range/encoding guards. Preserve low-ID stock behavior, then allow the first >255 move ID through GetCurrentMove only when its core record can be represented safely by the current battle engine.",
+    "stage": "first compiled >255 move fixture and generated table descriptors",
+    "next_task": "Generate a CI/debug-only logical move ID 256 with move-core v1 and move-name v1 records, pack its 16-bit indexes into ROM, wire nonzero descriptors into the SRAM service image, and verify the built integrated Yellow ROM resolves the ID through the 9-bit bank/index path. This fixture proves the >255 pipeline without inventing Generation 10 content.",
     "constraints": [
-      "Do not enable arbitrary IDs above 255 until stock battle fields that remain one byte have explicit conversion/range rules",
-      "Keep legacy one-byte move fields byte-exact for original moves",
-      "Dynamic legacy moves such as Struggle, Metronome and Mirror Move must fall back to high byte zero until their own 16-bit paths are migrated",
+      "Do not add fictional Generation 10 species, moves, items or mechanics",
+      "The ID 256 fixture is validation data only, not canonical game content",
+      "Original move IDs 1..165 must remain byte-exact on the stock path",
+      "Only records marked legacy_view_safe may enter the stock six-byte battle view",
+      "Modern types/effects/animations outside the Gen I namespace remain blocked until their consumers are widened",
       "Use SRAM bank 15 only for volatile runtime state/service/scratch",
       "No ROM or SAV binaries committed to GitHub",
       "GBA work remains separate from YELLOW"
