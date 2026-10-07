@@ -374,10 +374,156 @@ YellowPrepareCurrentMove16::
     ld [wYellowMoveNum + 1], a
 
     call YellowPrefetchCurrentMoveCore16Locked
+    call YellowPrefetchCurrentMoveName16Locked
 
     xor a
     ld [rRAMG], a
 
     pop af
     ldh [rIE], a
+    ret
+
+
+YellowLegacyMoveCoreSupportedLocked::
+; Carry clear = the prefetched core/name can be represented safely by the
+; stock six-byte Yellow battle move view. Carry set = keep legacy path.
+; PRECONDITION: interrupts disabled, SRAM bank 15 selected.
+    ld a, [wYellowMoveCoreStatus]
+    cp 1
+    jr nz, .fail
+    ld a, [wYellowMoveNameStatus]
+    cp 1
+    jr nz, .fail
+
+    ld a, [wYellowMoveCoreScratch + YMC_FLAGS]
+    bit YMC_FLAG_LEGACY_VIEW_SAFE, a
+    jr z, .fail
+
+    ld a, [wYellowMoveCoreScratch + YMC_ANIMATION + 1]
+    and a
+    jr nz, .fail
+    ld a, [wYellowMoveCoreScratch + YMC_ANIMATION]
+    and a
+    jr z, .fail
+    cp NUM_ATTACK_ANIMS + 1
+    jr nc, .fail
+
+    ld a, [wYellowMoveCoreScratch + YMC_EFFECT + 1]
+    and a
+    jr nz, .fail
+    ld a, [wYellowMoveCoreScratch + YMC_EFFECT]
+    cp NUM_MOVE_EFFECTS + 1
+    jr nc, .fail
+
+    ld a, [wYellowMoveCoreScratch + YMC_POWER + 1]
+    and a
+    jr nz, .fail
+    ld a, [wYellowMoveCoreScratch + YMC_ACCURACY + 1]
+    and a
+    jr nz, .fail
+
+    ld a, [wYellowMoveCoreScratch + YMC_TYPE + 1]
+    and a
+    jr nz, .fail
+    ld a, [wYellowMoveCoreScratch + YMC_TYPE]
+    cp GHOST + 1
+    jr c, .type_ok
+    cp FIRE
+    jr c, .fail
+    cp DRAGON + 1
+    jr nc, .fail
+.type_ok
+
+    ld a, [wYellowMoveCoreScratch + YMC_PP]
+    cp 41
+    jr nc, .fail
+
+    ld a, [wYellowMoveNameScratch + YMN_LENGTH]
+    and a
+    jr z, .fail
+    cp YMN_MAX_CHARS + 1
+    jr nc, .fail
+
+    and a
+    ret
+.fail
+    scf
+    ret
+
+YellowTryProjectCurrentMoveLegacyView16::
+; Project one explicitly compatible >255 move into stock Yellow's six-byte
+; battle view and wNameBuffer.
+;
+; Low-ID moves always return carry set so the original Moves/MoveNames path
+; stays byte-exact.
+    ldh a, [rIE]
+    push af
+    xor a
+    ldh [rIE], a
+
+    ld a, $0a
+    ld [rRAMG], a
+    ld a, YELLOW_RUNTIME_SRAM_BANK
+    ld [rRAMB], a
+
+    ld a, [wYellowMoveNum + 1]
+    and a
+    jr z, .fail
+
+    call YellowLegacyMoveCoreSupportedLocked
+    jr c, .fail
+
+    ldh a, [hWhoseTurn]
+    and a
+    jr z, .player
+    ld de, wEnemyMoveNum
+    jr .copy_view
+.player
+    ld de, wPlayerMoveNum
+
+.copy_view
+    ld a, [wYellowMoveCoreScratch + YMC_ANIMATION]
+    ld [de], a
+    inc de
+    ld a, [wYellowMoveCoreScratch + YMC_EFFECT]
+    ld [de], a
+    inc de
+    ld a, [wYellowMoveCoreScratch + YMC_POWER]
+    ld [de], a
+    inc de
+    ld a, [wYellowMoveCoreScratch + YMC_TYPE]
+    ld [de], a
+    inc de
+    ld a, [wYellowMoveCoreScratch + YMC_ACCURACY]
+    ld [de], a
+    inc de
+    ld a, [wYellowMoveCoreScratch + YMC_PP]
+    ld [de], a
+
+    ld a, [wYellowMoveNameScratch + YMN_LENGTH]
+    ld b, a
+    ld hl, wYellowMoveNameScratch + YMN_TEXT
+    ld de, wNameBuffer
+.copy_name
+    ld a, [hli]
+    ld [de], a
+    inc de
+    dec b
+    jr nz, .copy_name
+    ld a, "@"
+    ld [de], a
+
+    xor a
+    ld [rRAMG], a
+    pop af
+    ldh [rIE], a
+    and a
+    ret
+
+.fail
+    xor a
+    ld [rRAMG], a
+    pop af
+    ldh [rIE], a
+    scf
     ret
